@@ -40,7 +40,7 @@ class Server
 	private:
 		std::map<int(fd_client), 			Client> 	_clients;
 		std::map<std::string(name_channel),	Channel> 	_channels;
-		size_t 											_pid;
+		int 											_pid;
 		std::string 									_pasword;
 
 	public:
@@ -58,7 +58,7 @@ class Client
 		std::string 	nick;
 		std::string 	username;
 		bool 			authenticated;
-}
+};
 ```
 
 ```cpp
@@ -87,7 +87,7 @@ class Channel
 			· o: Give/take channel operator privilege
 			· l: Set/remove the user limit to channel
 	]
-}
+};
 
 ```
 
