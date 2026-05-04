@@ -1,9 +1,38 @@
 # ft_irc
 
+1. le main creer un serveur.
+```cpp 
+pid_serv, password_serv
+```
+
+2. le serveur ecoute sont pid et attend des instruction.
+
+3. quand un un client se connecte, le serveur demande au client de sidentifier avec le password_serv.
+
+4. le serve ajoute un client a ca liste, avec les inforamtion de base.
+```cpp 
+pid_client, username, nick
+```
+
+5. un client peut creer/rejoindre un channel. 
+```cpp 
+name_channel
+```
+
+6. un channel utilise c est variable interne pour l administartion du channel. le premier a rejoindre le channelle est ajouter dans la liste des operators, le suivant dans la liste members. 
+
+7. un client peut interagir avec un channel. 
+
+8. si un client fat partie de la liste operateur du channel il a des droit d administrator.
+
+9. un user peut etre bouger de la liste operator a menber seulement par un operator du channel concerne.
+
+10. la liste operator d un channel ne peut pas etre vide. 
+
 
 ## struct :
 ```cpp
-class server :
+class Server
 {
 
 	forme cannonique...
@@ -11,8 +40,8 @@ class server :
 	private:
 		std::map<int(fd_client), 			Client> 	_clients;
 		std::map<std::string(name_channel),	Channel> 	_channels;
-		size_t 											_pid
-		std::string 									_pasword
+		size_t 											_pid;
+		std::string 									_pasword;
 
 	public:
 		void acceptClient();
@@ -22,29 +51,27 @@ class server :
 ```
 
 ```cpp
-class client :
+class Client
 {
-	private:
-		std::string 	_password;
-
 	public:
 		int 			fd;
 		std::string 	nick;
 		std::string 	username;
 		bool 			authenticated;
 }
+```
 
 ```cpp
-class channel :
+class Channel
 {
 	private:
 		std::set<int> 	_members;
 		std::set<int> 	_operators;
-		std::string 	_channel_name
-		std::string 	_pasword
-		bool			_i
-		bool			_t
-		int				_l
+		std::string 	_channel_name;
+		std::string 	_pasword;
+		bool			_i;
+		bool			_t;
+		int				_l;
 
 	void bultin_[...](std::string str);
 
