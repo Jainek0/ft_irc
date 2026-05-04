@@ -9,8 +9,8 @@ class server :
 	forme cannonique...
 
 	private:
-		std::map<int(fd), Client> 						_clients;
-		std::map<std::string(name_channel), Channel> 	_channels;
+		std::map<int(fd_client), 			Client> 	_clients;
+		std::map<std::string(name_channel),	Channel> 	_channels;
 		size_t 											_pid
 		std::string 									_pasword
 
@@ -18,25 +18,33 @@ class server :
 		void acceptClient();
 		void removeClient(int fd);
 		void handleCommand(int fd, std::string cmd);
-
 };
+```
 
+```cpp
 class client :
 {
-	std::string 	_PASS;
-	std::string 	_NICK;
-	std::string 	_USER;
-	bool 			_authenticated;
-	int 			_fd;
+	private:
+		std::string 	_password;
+
+	public:
+		int 			fd;
+		std::string 	nick;
+		std::string 	username;
+		bool 			authenticated;
 }
 
+```cpp
 class channel :
 {
-	std::string 	_channel_name
-	std::string 	_pasword
-	bool			_i
-	bool			_t
-	int				_l
+	private:
+		std::set<int> 	_members;
+		std::set<int> 	_operators;
+		std::string 	_channel_name
+		std::string 	_pasword
+		bool			_i
+		bool			_t
+		int				_l
 
 	void bultin_[...](std::string str);
 
@@ -54,6 +62,5 @@ class channel :
 	]
 }
 
-
-```cpp
+```
 

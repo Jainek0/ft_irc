@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 
-#define PID_MAX 4194304
-#define ERR_PID "ERROR : BAD DEFINE PID\n"
+#define ERR_BAD_PID "ERROR : BAD DEFINE PID"
 
 #endif
