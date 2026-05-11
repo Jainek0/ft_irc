@@ -19,7 +19,7 @@ pid_client, username, nick
 name_channel
 ```
 
-6. un channel utilise c est variable interne pour l administartion du channel. le premier a rejoindre le channelle est ajouter dans la liste des operators, le suivant dans la liste members. 
+6. un channel utilise c est variable interne pour l administartion du channel. le premier a rejoindre le channelle est ajouter dans la liste des operators, les suivant dans la liste members. 
 
 7. un client peut interagir avec un channel. 
 
