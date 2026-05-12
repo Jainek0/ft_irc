@@ -8,7 +8,7 @@ class Client
 	public:
 		Client(int fd);
 		Client(Client &other);
-		Client& operator=(Client &other);
+		Client& operator=(const Client &other);
 		~Client();
 
 		int 			fd;

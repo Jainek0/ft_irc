@@ -3,7 +3,7 @@
 
 int	main(int argc, char **argv)
 {
-	if (argc != 2)
+	if (argc != 3)
 	{
 		std::cout << "true exec :\n              ./ircserv PID<int> PASSWORD<string>";
 		return 0;

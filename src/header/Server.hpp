@@ -9,7 +9,7 @@ class Server
 	public:
 		Server(int pid, std::string password);
 		Server(Server &other);
-		Server& operator=(Server &other);
+		Server& operator=(const Server &other);
 		~Server();
 
 		void acceptClient();
