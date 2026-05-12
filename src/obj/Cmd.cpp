@@ -13,10 +13,10 @@ Cmd::Cmd(std::string& str)
     {
         if (token[0] == ':')
         {
-            std::string trailing = token;
+            std::string trailing = token + " ";
             trailing.erase(0,1);
             while (ss >> token)
-                trailing += token;
+                trailing += token + " ";
             _args.push_back(trailing);
             break;
         }
@@ -24,7 +24,8 @@ Cmd::Cmd(std::string& str)
     }
     std::cout << "<CMD " << _prefix << ">\n\t" << _command;
     for (size_t i = 0; i < _args.size(); i++)
-        std::cout << "\n\t" << _args[i] << std::endl;
+        std::cout << "\n\t" << _args[i];
+    std::cout << std::endl;
 }
 
 Cmd::Cmd(Cmd& other)

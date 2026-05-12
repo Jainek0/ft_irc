@@ -15,6 +15,9 @@ class Cmd
         std::string                 _prefix;
         std::string                 _command;
         std::vector<std::string>    _args;
+
+    private:
+        void rec_trailing(std::istringstream& ss, std::string& token);
 };
 
 #endif

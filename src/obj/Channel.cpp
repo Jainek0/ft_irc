@@ -5,14 +5,14 @@
 Channel::Channel(std::string channel_name, int op ,std::string pasword)
     : _channel_name(channel_name), _pasword(pasword)
 {
-    std::cout << "chanell " << this->_channel_name << "is creat" << std::endl;
+    std::cout << "channel <" << this->_channel_name << "> is creat" << std::endl;
     _operators.insert(op);
 }
 
 Channel::Channel(std::string channel_name, int op)
     : _channel_name(channel_name)
 {
-    std::cout << "chanell " << this->_channel_name << "is creat" << std::endl;
+    std::cout << "channel <" << this->_channel_name << "> is creat" << std::endl;
     _operators.insert(op);
 }
 
@@ -38,7 +38,7 @@ Channel& Channel::operator=(const Channel& other)
 
 Channel::~Channel()
 {
-    std::cout << "chanell " << this->_channel_name << "is destroy" << std::endl;
+    std::cout << "channel <" << this->_channel_name << "> is destroy" << std::endl;
 }
 
 

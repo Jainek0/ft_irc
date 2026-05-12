@@ -11,10 +11,10 @@ class Client
 		Client& operator=(const Client &other);
 		~Client();
 
-		int 			fd;
-		std::string 	nick;
-		std::string 	username;
-		bool 			authenticated;
+		int 			_fd;
+		std::string 	_nick;
+		std::string 	_username;
+		bool 			_authenticated;
 };
 
 #endif

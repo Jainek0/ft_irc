@@ -9,13 +9,11 @@
 #include <map>
 
 
-
-
 /*  ------------------- {SRC} -------------------  */
 
-#include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "Server.hpp"
 #include "Cmd.hpp"
 
 /*  ------------------- {define} -------------------  */
