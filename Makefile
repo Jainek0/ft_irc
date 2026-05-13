@@ -25,6 +25,7 @@ clean:
 
 fclean: clean
 		rm -f $(NAME)
+		rm -f irc.log
 
 re: fclean all
 

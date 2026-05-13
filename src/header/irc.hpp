@@ -8,6 +8,10 @@
 #include <set>
 #include <map>
 
+#include <iomanip>
+#include <fstream>
+#include <ctime>
+
 
 /*  ----------------------- {SRC} -----------------------  */
 
@@ -27,6 +31,7 @@
 /*  ------------------< tools  */
 
 std::vector<std::string> split(const std::string& str, char sep);
+void logScript(const std::string& str);
 
 /*  ------------------< commands  */
 

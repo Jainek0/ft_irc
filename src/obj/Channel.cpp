@@ -5,14 +5,14 @@
 Channel::Channel(const std::string& channel_name, const Client& op , const std::string& pasword)
     : _channelName(channel_name), _pasword(pasword)
 {
-    std::cout << "channel <" << this->_channelName << "> was created by <"  << op.nick() << "> with the password <" << pasword << ">" << std::endl;
+    logScript("channel <" + this->_channelName + "> was created by <"  + op.nick() + "> with the password <" + pasword + ">");
     _operators.insert(op.fd());
 }
 
 Channel::Channel(const std::string& channel_name, const Client& op)
     : _channelName(channel_name)
 {
-    std::cout << "channel <" << this->_channelName << "> was created by <"  << op.nick() << ">" << std::endl;
+    logScript("channel <" + this->_channelName + "> was created by <"  + op.nick() + ">");
     _operators.insert(op.fd());
 }
 
@@ -35,10 +35,7 @@ Channel::Channel(const Channel& other)
 // }
 
 Channel::~Channel()
-{
-    // if (!this->_channel_name.empty())
-    //     std::cout << "channel <" << this->_channel_name << "> is destroy" << std::endl;
-}
+{}
 
 int Channel::findOperator(const std::string& nick) const 
 {

@@ -44,7 +44,7 @@ void Server::join(Client& user, Cmd& cmd)
                     std::cerr << "bad password for join <" << *itC << ">" << std::endl; // a renvoiler au client
                     break;
                 }
-                std::cout << "<" << user.nick() << "> join <" << *itC << ">" << std::endl;
+                logScript("<" + user.nick() + "> join <" + *itC + ">\n");
             }
             else
             {
