@@ -20,6 +20,10 @@
 #include "Channel.hpp"
 #include "Server.hpp"
 
+#include "request.hpp"
+
+#include "../tools/toString.hpp"
+
 /*  ----------------------- {define} -----------------------  */
 
 #define ERR_BAD_PID "ERROR : BAD DEFINE PID"

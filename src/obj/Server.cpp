@@ -2,14 +2,15 @@
 
 #include "../header/irc.hpp"
 
-Server::Server(int pid, std::string password)
-    : _pid(pid), _pasword(password) 
+Server::Server(int fd, std::string password)
+    : _fd(fd), _pasword(password) 
 {
     _commands = createCommands();
+    logScript( LOG_START(toString(fd)));
 }
 
 Server::Server(const Server &other)
-    : _pid(other._pid), _pasword(other._pasword), _clients(other._clients), _channels(other._channels), _commands(other._commands)
+    : _fd(other._fd), _pasword(other._pasword), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels), _commands(other._commands)
 {}
 
 // Server& Server::operator=(const Server &other)
@@ -22,36 +23,42 @@ Server::Server(const Server &other)
 //     return *this;
 // }
 
-Server::~Server() {}
-
-
-void Server::removeClient(int pid)
+Server::~Server()
 {
-    _clients.erase(pid);
+    logScript(LOG_END(toString(_fd)));
+}
+
+void Server::removeClient(int fd)
+{
+    _clientsNick.erase(_clientsFd.find(fd)->second.nick());
+    _clientsFd.erase(fd);
+}
+
+void Server::removeClient(const std::string nick)
+{
+    _clientsFd.erase(_clientsNick.find(nick)->second.fd());
+    _clientsNick.erase(nick);
 }
 
 
-Client&	Server::findClient(int pid)
-{
-    return (_clients.find(pid))->second;
-}
+Client&	Server::findClient(const int fd)                { return (_clientsFd.find(fd))->second; }
 
-bool Server::checkClient(int pid) const
-{
-    return (_clients.find(pid) != _clients.end());
-}
+Client&	Server::findClient(const std::string nick)      { return (_clientsNick.find(nick))->second; }
 
+bool Server::checkClient(const int fd) const            { return (_clientsFd.find(fd) != _clientsFd.end()); }
+
+bool Server::checkClient(const std::string nick) const  { return (_clientsNick.find(nick) != _clientsNick.end()); }
 
 
 /* ------------------------------------< work in progres >------------------------------------ */
 
-void Server::acceptClient(int pid)
+void Server::acceptClient(int fd)
 {
     // demander le password du serv ici, avent de creer user, puis completer info client.
-    Client tmp(pid, "kilian", "le bg");
-    _clients.insert(std::make_pair(pid, tmp));
-
-    
+    Client tmp(fd, "kilian", "le bg");
+    _clientsFd.insert(std::make_pair(fd, tmp));
+    _clientsNick.insert(std::make_pair(tmp.nick(), tmp));
+    logScript(LOG_ACCEPTCLIENT(toString(fd), tmp.nick(), tmp.getUsername()));
 }
 
 void Server::handleCommand(Client& user, std::string str)
@@ -62,5 +69,10 @@ void Server::handleCommand(Client& user, std::string str)
     if (itCmd != _commands.end())
         (this->*itCmd->second)(user, cmd);
     else
-        std::cout << "unknown command : " << cmd.command() << std::endl; // a revioller au client
+        std::cout << "unknown command : " << cmd.command() << std::endl; // a renvoiler au client,  l err n est pas la 
+}
+
+void	Server::putMsg(Client target, std::string msg)	const
+{
+    std::cout << "[" << target.nick() + "] " + msg << std::endl; // a renvoiler a target
 }

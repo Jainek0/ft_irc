@@ -2,22 +2,22 @@
 
 #include "../header/irc.hpp"
 
-Channel::Channel(const std::string& channel_name, const Client& op , const std::string& pasword)
-    : _channelName(channel_name), _pasword(pasword)
+Channel::Channel(const std::string& channel_name, const Client& op , const std::string& password)
+    : _channelName(channel_name), _pasword(password), _i(0), _t(0), _l(0)
 {
-    logScript("channel <" + this->_channelName + "> was created by <"  + op.nick() + "> with the password <" + pasword + ">");
+    logScript(LOG_CREATCHANNELPASS(this->_channelName, op.nick(), password));
     _operators.insert(op.fd());
 }
 
 Channel::Channel(const std::string& channel_name, const Client& op)
-    : _channelName(channel_name)
+    : _channelName(channel_name), _i(0), _t(0), _l(0)
 {
-    logScript("channel <" + this->_channelName + "> was created by <"  + op.nick() + ">");
+    logScript(LOG_CREATCHANNEL(this->_channelName, op.nick()));
     _operators.insert(op.fd());
 }
 
 Channel::Channel(const Channel& other)
-    : _channelName(other._channelName), _pasword(other._pasword)
+    : _channelName(other._channelName), _pasword(other._pasword), _i(0), _t(0), _l(0)
 {}
 
 // Channel& Channel::operator=(const Channel& other)
@@ -36,20 +36,6 @@ Channel::Channel(const Channel& other)
 
 Channel::~Channel()
 {}
-
-int Channel::findOperator(const std::string& nick) const 
-{
-    // Implementation needed - search operator by nickname
-    (void) nick;
-    return -1;
-}
-
-int Channel::findMember(const std::string& nick) const 
-{
-    // Implementation needed - search member by nickname
-    (void) nick;
-    return -1;
-}
 
 int Channel::findOperator(int pid) const
 {
@@ -86,3 +72,28 @@ void Channel::rmOperator(int pid) { _operators.erase(pid); }
 void Channel::rmMember(int pid) { _members.erase(pid); }
 
 const std::string Channel::channelName() const { return _channelName; }
+
+
+bool Channel::getMode(const char c) const
+{
+    if (c == 'l')
+    {
+        if (!_l)
+            return 0;
+        return (_members.size() + _operators.size() >= _l);
+    }
+    else if (c == 'i')
+        return _i;
+    return _t;
+}
+
+void Channel::setMode(const char c, size_t nb)
+{
+    if (c == 'l')
+        _l = nb;
+    else if (c == 'i')
+        _i = (nb > 0);
+    else if (c == 't')
+        _t = (nb > 0);
+}
+

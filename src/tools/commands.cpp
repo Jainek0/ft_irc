@@ -7,6 +7,9 @@ std::map<std::string, void (Server::*)(Client&, Cmd&)> Server::createCommands()
 
     commands["KICK"] = &Server::kick;
     commands["JOIN"] = &Server::join;
+    commands["MODE"] = &Server::mode;
+    commands["TOPIC"] = &Server::topic;
+
 
     return commands;
 }
@@ -17,15 +20,32 @@ void Server::kick(Client& user, Cmd& cmd)
 {
     (void) user;
     (void) cmd;
-    std::cout << "KICK\n";
 }
+
+void Server::mode(Client& user, Cmd& cmd)
+{
+    (void) user;
+    (void) cmd;
+}
+
+void Server::topic(Client& user, Cmd& cmd)
+{
+    (void) user;
+    (void) cmd;
+}
+
 
 void Server::join(Client& user, Cmd& cmd)
 {
-    std::vector<std::string> joiChannel(split(cmd.arg(0), ','));
+    std::vector<std::string> joinChannel(split(cmd.arg(0), ','));
+    if (joinChannel.size() < 1)
+    {
+        putMsg(user, ERR_NEEDMOREPARAMS(user.nick(), cmd.command()));
+        return ;
+    }
     std::vector<std::string> lstPassord(split(cmd.arg(1), ','));
     std::vector<std::string>::iterator itP(lstPassord.begin()); 
-    for (std::vector<std::string>::iterator itC(joiChannel.begin()); itC != joiChannel.end(); ++itC)
+    for (std::vector<std::string>::iterator itC(joinChannel.begin()); itC != joinChannel.end(); ++itC)
     {
         if (!itC->empty() && (*itC)[0] == '#')
         {
@@ -35,16 +55,17 @@ void Server::join(Client& user, Cmd& cmd)
             if (_channels.find(*itC) != _channels.end())
             {
                 Channel tmp((*_channels.find(*itC)).second);
-                if (tmp.emptyPassword())
+                if (tmp.getMode('i'))
+                    return putMsg(user, ERR_INVITEONLYCHAN(user.nick(), *itC));
+                else if (tmp.getMode('l'))
+                    return putMsg(user, ERR_CHANNELISFULL(user.nick(), *itC));        
+                else if (tmp.emptyPassword())
                     tmp.addOperator(user.fd());
                 else if (tmp.getPassword() == *itP)
                     tmp.addMember(user.fd());
                 else
-                {
-                    std::cerr << "bad password for join <" << *itC << ">" << std::endl; // a renvoiler au client
-                    break;
-                }
-                logScript("<" + user.nick() + "> join <" + *itC + ">\n");
+                    return putMsg(user, ERR_BADCHANNELKEY(user.nick(), *itC));
+                logScript(LOG_JOIN(user.nick(), *itC));
             }
             else
             {
@@ -62,9 +83,7 @@ void Server::join(Client& user, Cmd& cmd)
             }
         }
         else
-        {
-            std::cerr << "unknown :" << *itC << std::endl; // a renvoiler au client
-            break;
-        }
+            return putMsg(user, ERR_BADCHANMASK(user.nick(), *itC));
     }
 }
+

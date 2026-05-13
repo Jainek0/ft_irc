@@ -16,10 +16,11 @@ class Channel
 		const std::string 	getTopic()								const;
 		const std::string	channelName()							const;
 
-		int					findOperator(const std::string& nick)	const;
-		int					findMember(const std::string& nick)		const;
 		int					findOperator(const int pid)				const;
 		int					findMember(const int pid)				const;
+
+		bool				getMode(const char c) 					const;
+		void				setMode(const char c, size_t nb);
 
 		void				setPassword(const std::string& password);
 		void 				setTopic(const std::string& topic);
@@ -29,37 +30,26 @@ class Channel
 
 		void				rmOperator(const int pid);
 		void				rmMember(const int pid);
+
+
+
 	
 	private:
 
-		const std::string 		_channelName;
-		std::set<int> 			_members;
-		std::set<int> 			_operators;
-		std::string 			_topic;
-		std::string 			_pasword;
-		bool					_i;
-		bool					_t;
-		size_t					_l;
+		const std::string 			_channelName;
+		std::set<int> 	_members;
+		std::set<int> 	_operators;
+		std::string 				_topic;
+		std::string 				_pasword;
+		bool						_i;
+		bool						_t;
+		size_t						_l;
 
 
 	/*  ------------------< ban >------------------*/
 
 		Channel& operator=(const Channel& other);
 
-	// void bultin_[...](std::string str);
-
-	// [
-	// 	∗ KICK - Eject a client from the channel
-	// 	∗ INVITE - Invite a client to a channel
-	// 	∗ TOPIC - Change or view the channel topic
-	// 	∗ MODE - Change the channel’s mode:
-	// 		· i: Set/remove Invite-only channel
-	// 		· t: Set/remove the restrictions of the TOPIC command to channel
-	// 		operators
-	// 		· k: Set/remove the channel key (password)
-	// 		· o: Give/take channel operator privilege
-	// 		· l: Set/remove the user limit to channel
-	// ]
 };
 
 #endif
