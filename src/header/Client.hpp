@@ -6,15 +6,15 @@
 class Client
 {
 	public:
-		Client(int fd);
-		Client(Client &other);
+		Client();
+		Client(int fd, std::string nick, std::string username);
+		Client(const Client &other);
 		Client& operator=(const Client &other);
 		~Client();
 
 		int 			_fd;
 		std::string 	_nick;
 		std::string 	_username;
-		bool 			_authenticated;
 };
 
 #endif

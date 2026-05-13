@@ -6,20 +6,21 @@
 class Channel
 {
 	public:
-		Channel(std::string channel_name, int op ,std::string pasword);
-		Channel(std::string channel_name, int op);
-		Channel(Channel& other);
+		Channel();
+		Channel(std::string channel_name, std::string op ,std::string pasword);
+		Channel(std::string channel_name, std::string op);
+		Channel(const Channel& other);
 		Channel& operator=(const Channel& other);
 		~Channel();
 
-	private:
-		std::set<int> 	_members;
-		std::set<int> 	_operators;
-		std::string 	_channel_name;
-		std::string 	_pasword;
-		bool			_i;
-		bool			_t;
-		int				_l;
+		std::set<std::string> 	_members;
+		std::set<std::string> 	_operators;
+		std::string 			_channel_name;
+		std::string 			_topic;
+		std::string 			_pasword;
+		bool					_i;
+		bool					_t;
+		int						_l;
 
 	// void bultin_[...](std::string str);
 

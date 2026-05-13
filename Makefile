@@ -1,12 +1,11 @@
 NAME = ircserv
 SRC =	test.cpp \
 		\
-		src/obj/Cmd.cpp \
-		src/obj/Client.cpp \
-		src/obj/Channel.cpp \
-		#$(wildcard src/*.cpp) \
+		$(wildcard src/tools/*.cpp) \
 		\
-		#$(wildcard src/obj/*.cpp) \
+		$(wildcard src/obj/*.cpp) \
+		\
+		$(wildcard src/*.cpp) \
 
 OBJ = $(SRC:.cpp=.o)
 

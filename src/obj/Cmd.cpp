@@ -1,6 +1,9 @@
 
 #include "../header/irc.hpp"
 
+Cmd::Cmd()
+{}
+
 Cmd::Cmd(std::string& str)
 {
     std::istringstream  ss(str);
@@ -22,13 +25,16 @@ Cmd::Cmd(std::string& str)
         }
         _args.push_back(token);
     }
-    std::cout << "<CMD " << _prefix << ">\n\t" << _command;
+    if (!_prefix.empty())
+        std::cout << "<CMD " << _prefix << ">\n\t" << _command;
+    else
+        std::cout << "<CMD>\n\t" << _command;
     for (size_t i = 0; i < _args.size(); i++)
         std::cout << "\n\t" << _args[i];
     std::cout << std::endl;
 }
 
-Cmd::Cmd(Cmd& other)
+Cmd::Cmd(const Cmd& other)
 {
     *this = other;
 }

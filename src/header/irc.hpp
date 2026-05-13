@@ -9,20 +9,28 @@
 #include <map>
 
 
-/*  ------------------- {SRC} -------------------  */
+/*  ----------------------- {SRC} -----------------------  */
 
+#include "Cmd.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Server.hpp"
-#include "Cmd.hpp"
 
-/*  ------------------- {define} -------------------  */
+/*  ----------------------- {define} -----------------------  */
 
 #define ERR_BAD_PID "ERROR : BAD DEFINE PID"
 
 
-/*  ------------------- {func} -------------------  */
+/*  ----------------------- {func} -----------------------  */
 
+
+/*  ------------------< tools  */
+
+std::vector<std::string> split(const std::string& str, char sep);
+
+/*  ------------------< commands  */
+
+std::map<std::string, void(*)(Client&, Cmd&)> createCommands();
 
 
 #endif

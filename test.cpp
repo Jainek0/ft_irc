@@ -9,11 +9,11 @@ int	main(int argc, char **argv)
 		return 0;
 	}
 
-    Client  me(4242);
-    Channel cha("regarde comme je suis beau", me._fd);
+    Server  serv(3232, "truc");
+
+    serv.acceptClient(4242);
+    serv.handleCommand(4242, argv[1]);
 
     std::string str = argv[1];
-    Cmd cmd(str);
-
 	return 0;
 }

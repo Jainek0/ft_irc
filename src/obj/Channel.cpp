@@ -2,21 +2,24 @@
 
 #include "../header/irc.hpp"
 
-Channel::Channel(std::string channel_name, int op ,std::string pasword)
+Channel::Channel()
+{}
+
+Channel::Channel(std::string channel_name, std::string op ,std::string pasword)
     : _channel_name(channel_name), _pasword(pasword)
 {
-    std::cout << "channel <" << this->_channel_name << "> is creat" << std::endl;
+    std::cout << "channel <" << this->_channel_name << "> was created by <"  << op << "> with the password <" << pasword << ">" << std::endl;
     _operators.insert(op);
 }
 
-Channel::Channel(std::string channel_name, int op)
+Channel::Channel(std::string channel_name, std::string op)
     : _channel_name(channel_name)
 {
-    std::cout << "channel <" << this->_channel_name << "> is creat" << std::endl;
+    std::cout << "channel <" << this->_channel_name << "> was created by <"  << op << ">" << std::endl;
     _operators.insert(op);
 }
 
-Channel::Channel(Channel& other)
+Channel::Channel(const Channel& other)
 {
     *this = other;
 }
@@ -38,9 +41,9 @@ Channel& Channel::operator=(const Channel& other)
 
 Channel::~Channel()
 {
-    std::cout << "channel <" << this->_channel_name << "> is destroy" << std::endl;
+    // if (!this->_channel_name.empty())
+    //     std::cout << "channel <" << this->_channel_name << "> is destroy" << std::endl;
 }
-
 
 
 
