@@ -11,8 +11,10 @@ int	main(int argc, char **argv)
 
     Server  serv(3232, "truc");
 
-    serv.acceptClient(4242);
-    serv.handleCommand(4242, argv[1]);
+	int pid(4242);
+    serv.acceptClient(pid);
+	if (serv.checkClient(pid))
+   		serv.handleCommand(serv.findClient(pid), argv[1]);
 
     std::string str = argv[1];
 	return 0;

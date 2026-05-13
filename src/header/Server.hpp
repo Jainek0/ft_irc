@@ -7,28 +7,34 @@
 class Server
 {
 	public:
-		Server();
 		Server(int pid, std::string password);
 		Server(const Server &other);
-		Server& operator=(const Server &other);
 		~Server();
 
-		void acceptClient(int pid);
-		void removeClient(std::string nickUser);
-		void handleCommand(int pid, std::string cmd);
-			
+		void 	acceptClient(const int pid);
+		void 	removeClient(const int pid);
+		void 	handleCommand(Client& user, std::string str);
+		
+		bool 	checkClient(const int pid) 	const;
+		Client&	findClient(const int pid);
+
+	
 	private:
-		int 													_pid;
-		std::string												_pasword;
+		const int												_pid;
+		const std::string										_pasword;
 		std::map<int, Client> 									_clients;
 		std::map<std::string, Channel> 							_channels;
 		std::map<std::string, void (Server::*)(Client&, Cmd&)> 	_commands;
 
-		/*  ------------------< commands >------------------*/
+	/*  ------------------< commands >------------------*/
 
 		std::map<std::string, void (Server::*)(Client&, Cmd&)> createCommands();
 		void kick(Client& user, Cmd& cmd);
 		void join(Client& user, Cmd& cmd);
+
+	/*  ------------------< ban >------------------*/
+
+		Server& operator=(const Server &other);
 
 };
 
