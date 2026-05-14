@@ -1,5 +1,5 @@
 
-#include "src/header/irc.hpp"
+#include "src/_header/irc.hpp"
 
 int	main(int argc, char **argv)
 {

@@ -3,7 +3,7 @@ SRC =	test.cpp \
 		\
 		$(wildcard src/tools/*.cpp) \
 		\
-		$(wildcard src/obj/*.cpp) \
+		$(wildcard src/class/*.cpp) \
 		\
 		$(wildcard src/*.cpp) \
 

@@ -19,6 +19,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "Server.hpp"
+#include "Command.hpp"
 
 #include "request.hpp"
 
@@ -26,7 +27,9 @@
 
 /*  ----------------------- {define} -----------------------  */
 
+
 #define ERR_BAD_PID "ERROR : BAD DEFINE PID"
+
 
 
 /*  ----------------------- {func} -----------------------  */
@@ -38,8 +41,5 @@ std::vector<std::string> split(const std::string& str, char sep);
 void logScript(const std::string& str);
 
 /*  ------------------< commands  */
-
-std::map<std::string, void(*)(Client&, Cmd&)> createCommands();
-
 
 #endif

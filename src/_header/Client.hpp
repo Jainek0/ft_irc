@@ -1,24 +1,25 @@
 #ifndef CLIENT_HPP
-#define CLIENT_HPP
+# define CLIENT_HPP
 
-#include "irc.hpp"
+# include "irc.hpp"
 
 class Client
 {
 	public:
-		Client(int fd, std::string nick, std::string username);
+		Client(int fd);
 		Client(const Client &other);
 		~Client();
 
 		const std::string	getUsername()	const;
-		const std::string	nick() 			const;
+		const std::string	getNick() 		const;
 		int					fd()			const;
 
 		void				setUsername(const std::string);
+		void				setNick(const std::string);
 		
 	private:
 		const int 			_fd;
-		const std::string 	_nick;
+		std::string 		_nick;
 		std::string 		_username;
 		
 	/*  ------------------< ban >------------------*/

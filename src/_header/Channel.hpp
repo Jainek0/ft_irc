@@ -1,7 +1,7 @@
 #ifndef CHANNEL_HPP
-#define CHANNEL_HPP
+# define CHANNEL_HPP
 
-#include "irc.hpp"
+# include "irc.hpp"
 
 class Channel
 {
@@ -11,10 +11,10 @@ class Channel
 		Channel(const Channel& other);
 		~Channel();
 
+		bool 				checkPassword(std::string pass) 		const;
 		bool				emptyPassword()							const;
-		const std::string 	getPassword()							const;
-		const std::string 	getTopic()								const;
 		const std::string	channelName()							const;
+		const std::string 	getTopic()								const;
 
 		int					findOperator(const int pid)				const;
 		int					findMember(const int pid)				const;
@@ -33,14 +33,13 @@ class Channel
 
 
 
-	
 	private:
 
 		const std::string 			_channelName;
-		std::set<int> 	_members;
-		std::set<int> 	_operators;
+		std::set<int> 				_members;
+		std::set<int>				_operators;
 		std::string 				_topic;
-		std::string 				_pasword;
+		std::string 				_password;
 		bool						_i;
 		bool						_t;
 		size_t						_l;

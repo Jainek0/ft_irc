@@ -1,8 +1,8 @@
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
-Client::Client(int fd, std::string nick, std::string username)
-    : _fd(fd), _nick(nick), _username(username)
+Client::Client(int fd)
+    : _fd(fd)
 {}
 
 Client::Client(const Client &other)
@@ -24,8 +24,11 @@ Client::~Client()
 
 const std::string Client::getUsername() const { return _username; }
 
-const std::string Client::nick() const { return _nick; }
+const std::string Client::getNick() const { return _nick; }
 
 int Client::fd() const { return _fd; }
 
 void Client::setUsername(const std::string username) { _username = username; }
+
+void Client::setNick(const std::string nick) { _nick = nick; }
+

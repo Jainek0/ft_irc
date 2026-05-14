@@ -3,7 +3,7 @@
 #ifndef TOSTRING_HPP
 #define TOSTRING_HPP
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
 template <typename T>
 std::string toString(const T& value)

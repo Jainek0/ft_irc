@@ -1,5 +1,5 @@
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
 Cmd::~Cmd()
 {}
@@ -26,12 +26,12 @@ Cmd::Cmd(std::string& str)
         _args.push_back(token);
     }
     if (!_prefix.empty())
-        std::cout << "<CMD " << _prefix << ">\n\t" << _command;
+        std::cout << "<CMD:" << _prefix << "\n\t" << _command;
     else
-        std::cout << "<CMD>\n\t" << _command;
+        std::cout << "<CMD\n\t" << _command;
     for (size_t i = 0; i < _args.size(); i++)
         std::cout << "\n\t" << _args[i];
-    std::cout << std::endl;
+    std::cout << "\n>"<< std::endl;
 }
 
 Cmd::Cmd(const Cmd& other)

@@ -1,23 +1,23 @@
 
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
 Channel::Channel(const std::string& channel_name, const Client& op , const std::string& password)
-    : _channelName(channel_name), _pasword(password), _i(0), _t(0), _l(0)
+    : _channelName(channel_name), _password(password), _i(0), _t(0), _l(0)
 {
-    logScript(LOG_CREATCHANNELPASS(this->_channelName, op.nick(), password));
+    logScript(LOG_CREATCHANNELPASS(toString(op.fd()), this->_channelName, op.getNick(), password));
     _operators.insert(op.fd());
 }
 
 Channel::Channel(const std::string& channel_name, const Client& op)
     : _channelName(channel_name), _i(0), _t(0), _l(0)
 {
-    logScript(LOG_CREATCHANNEL(this->_channelName, op.nick()));
+    logScript(LOG_CREATCHANNEL(toString(op.fd()), this->_channelName, op.getNick()));
     _operators.insert(op.fd());
 }
 
 Channel::Channel(const Channel& other)
-    : _channelName(other._channelName), _pasword(other._pasword), _i(0), _t(0), _l(0)
+    : _channelName(other._channelName), _password(other._password), _i(0), _t(0), _l(0)
 {}
 
 // Channel& Channel::operator=(const Channel& other)
@@ -53,13 +53,14 @@ int Channel::findMember(int pid) const
 
 
 
-bool Channel::emptyPassword() const { return _pasword.empty(); }
+bool Channel::emptyPassword() const { return _password.empty(); }
 
-const std::string Channel::getPassword() const { return _pasword; }
+
+bool Channel::checkPassword(std::string pass) const { return _password == pass; }
 
 const std::string Channel::getTopic() const { return _topic; }
 
-void Channel::setPassword(const std::string& password) { _pasword = password; }
+void Channel::setPassword(const std::string& password) { _password = password; }
 
 void Channel::setTopic(const std::string& topic) { _topic = topic; }
 

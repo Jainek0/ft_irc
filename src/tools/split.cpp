@@ -1,5 +1,5 @@
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
 std::vector<std::string> split(const std::string& str, char sep)
 {
