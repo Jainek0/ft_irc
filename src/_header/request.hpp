@@ -9,7 +9,9 @@
 
 /*  ----------------------- {LOG} -----------------------  */
 
-# define LOG_JOIN(fd, client, cmd)("[" + fd + "] <" + client + "> join <" + cmd + ">")
+# define LOG_JOIN_OP(fd, nick, channel)("[" + fd + "] <" + nick + "> join <" + channel + "> as operator")
+# define LOG_JOIN_MEMBER(fd, nick, channel)("[" + fd + "] <" + nick + "> join <" + channel + "> as members")
+# define LOG_KCIK(fd, nick, kick, channel)("[" + fd + "] <" + kick + "> KCIK <" + channel + "> by <" + nick + ">")
 
 # define LOG_CREATCHANNELPASS(fd, channel, client, pass)("[" + fd + "] channel <" + channel + "> was created by <"  + client + "> with the password <" + pass + ">")
 # define LOG_CREATCHANNEL(fd, channel, client)("[" + fd + "] channel <" + channel + "> was created by <"  + client + ">")
@@ -23,8 +25,10 @@
 /*  ----------------------- {ERROR} -----------------------  */
 
 
-# define ERR_UNKNOWNCOMMAND(command)(":" + SERVER_NAME + " 421 " + command + " :command is unknown to the server\r\n")
+# define ERR_UNKNOWNCOMMAND(client, command)(":" + SERVER_NAME + " 421 " + client + " "  + command + " :command is unknown to the server\r\n")
 
+
+# define ERR_NOSUCHCHANNEL(client, channel)(":" + SERVER_NAME + " 403 " + client + " " + channel + ":channel name is invalid, or does not exist")
 
 # define ERR_TOOMUCHPARAMS(client, cmd)(client + " " + cmd + " :Too much parameters\r\n")
 # define ERR_USERONCHANNEL(nick, channel)(":" + SERVER_NAME + " 303 " + nick + " " + channel + " :is already on channel\r\n")
@@ -42,7 +46,7 @@
 # define ERR_USERNAMEINUSE(client, username)(":127.0.0.1 433 * " + client + " " + username + " :Username is already in use\r\n")
 # define ERR_NORECIPIENT(client, command)(":" + SERVER_NAME + " 411 " + client + " " + command + " :No recipient given\r\n")
 
-# define ERR_USERNOTINCHANNEL(client, nick, channel)(":" + SERVER_NAME + " 441 " + client + " " + nick + " " + channel + " :They aren't on that channel\r\n")
+# define ERR_USERNOTINCHANNEL(nick, channel)(":" + SERVER_NAME + " 441 " + nick + " " + channel + " :They aren't on that channel\r\n")
 # define ERR_NOTONCHANNEL(client, channel)(":" + SERVER_NAME + " 442 " + client + " " + channel + " :Not on that channel\r\n")
 # define ERR_NOTREGISTERED()(":" + SERVER_NAME + " 451 :You have not registered\r\n")
 # define ERR_NEEDMOREPARAMS(client, cmd)(":" + SERVER_NAME + " 461 " + client + " " + cmd + " :Not enough parameters\r\n")

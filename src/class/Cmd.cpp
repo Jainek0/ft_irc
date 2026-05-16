@@ -63,8 +63,17 @@ const std::string& Cmd::arg(size_t i) const
 
     if (i >= _args.size())
         return empty;
-
     return _args[i];
 }
 
 
+const std::string Cmd::argcs(size_t i) const
+{
+    std::string cs;
+
+    if (i >= _args.size())
+        return NULL;
+    while (i >= _args.size())
+        cs += _args[i++];
+    return cs;
+}

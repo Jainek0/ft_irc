@@ -8,18 +8,18 @@ class Command
 {
 	public:
 
-		static void handleCommand(Client& user, std::string str);
+		static void	 		handleCommand	(Client& user, std::string str);
 
 		/*  ------------------< commands >------------------  */
 
-		static void		join		(Client& user, Cmd& cmd);
-		static void		kick		(Client& user, Cmd& cmd);
-		static void		mode		(Client& user, Cmd& cmd);
-		static void		topic		(Client& user, Cmd& cmd);
+		static void			join			(Client& user, Cmd& cmd);
+		static void			kick			(Client& user, Cmd& cmd);
+		static void			mode			(Client& user, Cmd& cmd);
+		static void			topic			(Client& user, Cmd& cmd);
 
 	private:
 
-		static std::map<std::string, void (*)(Client&, Cmd&)> createCommands();
+		static mapCommand_t	createCommands	();
 
 		/*  ------------------< ban >------------------  */
 

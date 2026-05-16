@@ -35,26 +35,26 @@ Server::~Server()
 
 void Server::rmClient(int fd)
 {
-	_clientsNick.erase(_clientsFd.find(fd)->second.getNick());
+	_clientsNick.erase(_clientsFd.find(fd)->second.getNickName());
 	_clientsFd.erase(fd);
 }
 
-void Server::rmClient(const std::string nick)
+void Server::rmClient(const std::string Name)
 {
-	_clientsFd.erase(_clientsNick.find(nick)->second.fd());
-	_clientsNick.erase(nick);
+	_clientsFd.erase(_clientsNick.find(Name)->second.getFd());
+	_clientsNick.erase(Name);
 }
 
 void Server::addClient(const int fd, Client user)
 {
 	_clientsFd.insert(std::make_pair(fd, user));
-	_clientsNick.insert(std::make_pair(user.getNick(), user));
+	_clientsNick.insert(std::make_pair(user.getNickName(), user));
 }
 
-void Server::addClient(const std::string nick, Client user)
+void Server::addClient(const std::string Name, Client user)
 { 
-	_clientsFd.insert(std::make_pair(user.fd(), user));
-	_clientsNick.insert(std::make_pair(nick, user));
+	_clientsFd.insert(std::make_pair(user.getFd(), user));
+	_clientsNick.insert(std::make_pair(Name, user));
 }
 
 void Server::addChannel(const std::string name, Channel channel)
@@ -64,30 +64,30 @@ void Server::addChannel(const std::string name, Channel channel)
 
 
 
-mapClient_i_t::iterator    	Server::findClient(const int fd)					{ return (_clientsFd.find(fd)); }
+mapClient_i_t::iterator    		Server::findClient(const int fd)					{ return (_clientsFd.find(fd)); }
 
-mapClient_s_t::iterator    	Server::findClient(const std::string nick)			{ return (_clientsNick.find(nick)); }
+mapClient_s_t::iterator    		Server::findClient(const std::string Name)			{ return (_clientsNick.find(Name)); }
 
-mapChannel_t::iterator     	Server::findChannel(const std::string name)			{ return (_channels.find(name)); }
-
-
-mapClient_i_t::iterator    	Server::endClientFd()                   			{ return (_clientsFd.end()); }
-
-mapClient_s_t::iterator    	Server::endClientNick()         					{ return (_clientsNick.end()); }
-
-mapChannel_t::iterator     	Server::endChannel()        						{ return (_channels.end()); }
+mapChannel_t::iterator    		Server::findChannel(const std::string name)			{ return (_channels.find(name)); }
 
 
-mapClient_i_t::iterator    	Server::beginClientFd()                 			{ return (_clientsFd.begin()); }
+mapClient_i_t::const_iterator 	Server::endClientFd()     					const	{ return (_clientsFd.end()); }
 
-mapClient_s_t::iterator    	Server::beginClientNick()       					{ return (_clientsNick.begin()); }
+mapClient_s_t::const_iterator 	Server::endClientNick()   					const	{ return (_clientsNick.end()); }
 
-mapChannel_t::iterator     	Server::beginChannel()      						{ return (_channels.begin()); }
+mapChannel_t::const_iterator  	Server::endChannel()      					const	{ return (_channels.end()); }
 
 
-bool                       	Server::checkClient(const int fd) const            	{ return (_clientsFd.find(fd) != _clientsFd.end()); }
+mapClient_i_t::iterator    		Server::beginClientFd()                 			{ return (_clientsFd.begin()); }
 
-bool                       	Server::checkClient(const std::string nick) const  	{ return (_clientsNick.find(nick) != _clientsNick.end()); }
+mapClient_s_t::iterator    		Server::beginNick()       							{ return (_clientsNick.begin()); }
+
+mapChannel_t::iterator     		Server::beginChannel()      						{ return (_channels.begin()); }
+
+
+bool                       		Server::checkClient(const int fd) 			const	{ return (_clientsFd.find(fd) != _clientsFd.end()); }
+
+bool                       		Server::checkClient(const std::string Name)	const  	{ return (_clientsNick.find(Name) != _clientsNick.end()); }
 
 
 /* ------------------------------------< work in progres >------------------------------------ */
@@ -98,16 +98,25 @@ void Server::acceptClient()
 	Client tmp(4242);
 
 
-	tmp.setNick("Kilian");
-	tmp.setNick("le bg");
+	tmp.setNickName("le_bg");
+	tmp.setUserName("kilian");
+
+
 	_clientsFd.insert(std::make_pair(4242, tmp));
-	_clientsNick.insert(std::make_pair(tmp.getNick(), tmp));
+	_clientsNick.insert(std::make_pair(tmp.getNickName(), tmp));
 	logScript(LOG_ACCEPTCLIENT(toString(3232), toString(4242)));
 }
 
 /*      a changer pour envoiler les msg a target et pas le print comme actuellement     */
-void	Server::putMsg(Client target, std::string msg)	const
+void	Server::putMsg(const Client& target, const std::string& msg)	const
 {
-	std::cout << "[" << target.getNick() + "] " \
-	+ msg << std::endl;
+	std::cout << "[" << target.getNickName() + "] " + msg << std::endl;
+}
+
+void	Server::putMsg(const Channel& target, const std::string& msg) const
+{
+	target.log();
+	std::set<int> lst(target.getUser());
+	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
+		std::cout << "[" << toString(*it) + "] " + msg << std::endl;
 }

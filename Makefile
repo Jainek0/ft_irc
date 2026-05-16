@@ -2,6 +2,7 @@ NAME = ircserv
 SRC =	test.cpp \
 		\
 		$(wildcard src/tools/*.cpp) \
+		$(wildcard src/tools/*.tpp) \
 		\
 		$(wildcard src/class/*.cpp) \
 		\

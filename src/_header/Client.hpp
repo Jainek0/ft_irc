@@ -10,17 +10,18 @@ class Client
 		Client(const Client &other);
 		~Client();
 
-		const std::string	getUsername()	const;
-		const std::string	getNick() 		const;
-		int					fd()			const;
+		const std::string	getNickName	()			  const;
+		const std::string	getUserName	() 			  const;
+		const std::string	getPrefix	() 			  const;
+		int					getFd		()			  const;
 
-		void				setUsername(const std::string);
-		void				setNick(const std::string);
+		void				setNickName	(const std::string);
+		void				setUserName	(const std::string);
 		
 	private:
 		const int 			_fd;
-		std::string 		_nick;
-		std::string 		_username;
+		std::string 		_userName;
+		std::string 		_nickName;
 		
 	/*  ------------------< ban >------------------*/
 	

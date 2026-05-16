@@ -6,7 +6,7 @@ Client::Client(int fd)
 {}
 
 Client::Client(const Client &other)
-    : _fd(other._fd), _nick(other._nick), _username(other._username)
+    : _fd(other._fd), _userName(other._userName), _nickName(other._nickName)
 {}
 
 // Client& Client::operator=(const Client &other)
@@ -22,13 +22,14 @@ Client::~Client()
 {}
 
 
-const std::string Client::getUsername() const { return _username; }
+const std::string Client::getNickName() const { return _nickName; }
 
-const std::string Client::getNick() const { return _nick; }
+const std::string Client::getUserName() const { return _userName; }
+const std::string Client::getPrefix() const { return (":" + _nickName + "@" + _userName); }
 
-int Client::fd() const { return _fd; }
 
-void Client::setUsername(const std::string username) { _username = username; }
+int Client::getFd() const { return _fd; }
 
-void Client::setNick(const std::string nick) { _nick = nick; }
+void Client::setNickName(const std::string nickName) { _nickName = nickName; }
 
+void Client::setUserName(const std::string username) { _userName = username; }

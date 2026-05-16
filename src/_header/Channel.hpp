@@ -11,43 +11,51 @@ class Channel
 		Channel(const Channel& other);
 		~Channel();
 
-		bool 				checkPassword(std::string pass) 		const;
-		bool				emptyPassword()							const;
-		const std::string	channelName()							const;
-		const std::string 	getTopic()								const;
+		const std::string	getName			()								const;
+		const std::string 	getTopic		()								const;
+		bool				emptyPassword	()								const;
+		bool 				checkPassword	(const std::string pass) 		const;
 
-		int					findOperator(const int pid)				const;
-		int					findMember(const int pid)				const;
+		int					findOperator	(const int fd)					const;
+		int					findMember		(const int fd)					const;
+		int					findUser		(const int fd)					const;
 
-		bool				getMode(const char c) 					const;
-		void				setMode(const char c, size_t nb);
+		std::set<int>		getOperator		()								const;
+		std::set<int>		getMember		()								const;
+		std::set<int>		getUser			()								const;
 
-		void				setPassword(const std::string& password);
-		void 				setTopic(const std::string& topic);
+		bool				getMode			(const char c) 					const;
+		void				setMode			(const char c, size_t nb);
 
-		void				addOperator(const int pid);
-		void				addMember(const int pid);
+		void				setPassword		(const std::string& password);
+		void 				setTopic		(const std::string& topic);
 
-		void				rmOperator(const int pid);
-		void				rmMember(const int pid);
+		void				addOperator		(const int fd);
+		void				addMember		(const int fd);
+
+		void				rmOperator		(const int fd);
+		void				rmMember		(const int fd);
+		void				rmUser			(const int fd);
+
+		void				log				()								const; // tmp ? ----------------------------------------------
 
 
 
 	private:
 
-		const std::string 			_channelName;
-		std::set<int> 				_members;
-		std::set<int>				_operators;
-		std::string 				_topic;
-		std::string 				_password;
-		bool						_i;
-		bool						_t;
-		size_t						_l;
+		const std::string 	_name;
+		std::set<int> 		_members;
+		std::set<int>		_operators;
+		std::string 		_topic;
+		std::string 		_password;
+		bool				_i;
+		bool				_t;
+		size_t				_l;
 
 
 	/*  ------------------< ban >------------------*/
 
-		Channel& operator=(const Channel& other);
+		Channel&			operator=		(const Channel& other);
 
 };
 
