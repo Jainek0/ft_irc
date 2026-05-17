@@ -11,7 +11,10 @@
 
 # define LOG_JOIN_OP(fd, nick, channel)("[" + fd + "] <" + nick + "> join <" + channel + "> as operator")
 # define LOG_JOIN_MEMBER(fd, nick, channel)("[" + fd + "] <" + nick + "> join <" + channel + "> as members")
-# define LOG_KCIK(fd, nick, kick, channel)("[" + fd + "] <" + kick + "> KCIK <" + channel + "> by <" + nick + ">")
+# define LOG_KCIK(fd, nick, kicked, channel)("[" + fd + "] <" + kicked + "> KCIK <" + channel + "> by <" + nick + ">")
+
+# define LOG_TOPIC(fd, nick, channel, topic)("[" + fd + "] <" + nick + "> SET TOPIC [" + channel + "]  <" + topic + ">")
+
 
 # define LOG_CREATCHANNELPASS(fd, channel, client, pass)("[" + fd + "] channel <" + channel + "> was created by <"  + client + "> with the password <" + pass + ">")
 # define LOG_CREATCHANNEL(fd, channel, client)("[" + fd + "] channel <" + channel + "> was created by <"  + client + ">")
@@ -27,6 +30,7 @@
 
 # define ERR_UNKNOWNCOMMAND(client, command)(":" + SERVER_NAME + " 421 " + client + " "  + command + " :command is unknown to the server\r\n")
 
+# define ERR_UMODEUNKNOWNFLAG(client, flag)(":" + SERVER_NAME + " 501 " + client + " "  + flag + " :Unknown MODE flag")
 
 # define ERR_NOSUCHCHANNEL(client, channel)(":" + SERVER_NAME + " 403 " + client + " " + channel + ":channel name is invalid, or does not exist")
 

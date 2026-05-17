@@ -16,6 +16,14 @@ class Command
 		static void			kick			(Client& user, Cmd& cmd);
 		static void			mode			(Client& user, Cmd& cmd);
 		static void			topic			(Client& user, Cmd& cmd);
+		static void			privmsg			(Client& user, Cmd& cmd);
+		static void			ping			(Client& user, Cmd& cmd);
+		static void			quit			(Client& user, Cmd& cmd);
+		static void			invite			(Client& user, Cmd& cmd);
+
+
+
+
 
 	private:
 

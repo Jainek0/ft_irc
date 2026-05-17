@@ -69,11 +69,9 @@ const std::string& Cmd::arg(size_t i) const
 
 const std::string Cmd::argcs(size_t i) const
 {
-    std::string cs;
+	std::string cs;
 
-    if (i >= _args.size())
-        return NULL;
-    while (i >= _args.size())
-        cs += _args[i++];
-    return cs;
+	while (i < _args.size())
+		cs += _args[i++] + " ";
+	return cs;
 }

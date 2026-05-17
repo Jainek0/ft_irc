@@ -30,6 +30,7 @@ class Channel
 		void				setPassword		(const std::string& password);
 		void 				setTopic		(const std::string& topic);
 
+		void				grade			(const bool b, const int fd);
 		void				addOperator		(const int fd);
 		void				addMember		(const int fd);
 

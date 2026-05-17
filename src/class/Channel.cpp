@@ -73,9 +73,31 @@ void Channel::setPassword(const std::string& password) { _password = password; }
 
 void Channel::setTopic(const std::string& topic) { _topic = topic; }
 
-void Channel::addOperator(int fd) { _operators.insert(fd); }
+void Channel::grade(bool b, int fd)
+{ 
+    if (b)
+    {
+        _members.erase(fd);
+        _operators.insert(fd);
+    }
+	else
+	{
+		_operators.erase(fd);
+        _members.insert(fd);
+	}
+}
 
-void Channel::addMember(int fd) { _members.insert(fd); }
+void Channel::addOperator(int fd)
+{ 
+	if (findUser(fd) <= 0)
+		_operators.insert(fd); 
+}
+
+void Channel::addMember(int fd)
+{ 
+	if (findUser(fd) <= 0)
+		_members.insert(fd); 
+}
 
 void Channel::rmOperator(int fd) { _operators.erase(fd); }
 
@@ -102,9 +124,7 @@ std::set<int>	Channel::getUser()	const
     return tmp;
 }
 
-
 const std::string Channel::getName() const { return _name; }
-
 
 bool Channel::getMode(const char c) const
 {
@@ -144,9 +164,16 @@ void Channel::log() const
     for (std::set<int>::iterator it = _members.begin(); it != _members.end(); )
     {
         str += toString(*it);
-        if ((++it) != _operators.end())
+        if ((++it) != _members.end())
             str += ",";
     }
-    str += ">";
+    str += "> mode \t:";
+
+	str += "\n\t\t\t\t\t password: <" + _password + ">";
+	str += "\n\t\t\t\t\t topic: <" + _topic + ">";
+	str += "\n\t\t\t\t\t t: <" + toString(_t) + ">";
+	str += "\n\t\t\t\t\t l: <" + toString(_l) + ">";
+	str += "\n\t\t\t\t\t i: <" + toString(_i) + ">";
+
     logScript(str);
 }

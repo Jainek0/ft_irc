@@ -2,11 +2,13 @@
 # define IRC_HPP
 
 # include <iostream>
+# include <cstdlib>
 # include <sstream>
 # include <string>
 # include <vector>
 # include <set>
 # include <map>
+
 
 # include <iomanip>
 # include <fstream>
