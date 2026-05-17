@@ -19,10 +19,13 @@ class Channel
 		int					findOperator	(const int fd)					const;
 		int					findMember		(const int fd)					const;
 		int					findUser		(const int fd)					const;
+		int					findInvite		(const int fd)					const;
 
 		std::set<int>		getOperator		()								const;
 		std::set<int>		getMember		()								const;
 		std::set<int>		getUser			()								const;
+		std::set<int>		getInvite		()								const;
+
 
 		bool				getMode			(const char c) 					const;
 		void				setMode			(const char c, size_t nb);
@@ -33,10 +36,15 @@ class Channel
 		void				grade			(const bool b, const int fd);
 		void				addOperator		(const int fd);
 		void				addMember		(const int fd);
+		void				addInvite		(const int fd);
 
 		void				rmOperator		(const int fd);
 		void				rmMember		(const int fd);
 		void				rmUser			(const int fd);
+		void				rmInvite		(const int fd);
+
+		void				clearInvite		();
+
 
 		void				log				()								const; // tmp ? ----------------------------------------------
 
@@ -47,6 +55,7 @@ class Channel
 		const std::string 	_name;
 		std::set<int> 		_members;
 		std::set<int>		_operators;
+		std::set<int>		_invite;
 		std::string 		_topic;
 		std::string 		_password;
 		bool				_i;

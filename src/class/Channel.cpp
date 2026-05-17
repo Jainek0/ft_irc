@@ -60,6 +60,14 @@ int Channel::findUser(int fd) const
     return -1;
 }
 
+int Channel::findInvite(int fd) const
+{
+    if (_invite.find(fd) != _invite.end())
+        return fd;
+    return -1;
+}
+
+
 
 
 bool Channel::emptyPassword() const { return _password.empty(); }
@@ -89,32 +97,62 @@ void Channel::grade(bool b, int fd)
 
 void Channel::addOperator(int fd)
 { 
-	if (findUser(fd) <= 0)
-		_operators.insert(fd); 
+	if (findUser(fd) == -1)
+	{
+		rmInvite(fd);
+		_operators.insert(fd);
+
+		Server& serv = Server::getInstance();
+		serv.findClient(fd)->second.addChannel(_name);
+	}
 }
 
 void Channel::addMember(int fd)
 { 
-	if (findUser(fd) <= 0)
-		_members.insert(fd); 
+	if (findUser(fd) == -1)
+	{
+		rmInvite(fd);
+		_members.insert(fd);
+
+		Server& serv = Server::getInstance();
+		serv.findClient(fd)->second.addChannel(_name);
+	}
 }
 
-void Channel::rmOperator(int fd) { _operators.erase(fd); }
+void Channel::addInvite(int fd)
+{ 
+	_invite.insert(fd); 
+}
 
-void Channel::rmMember(int fd) { _members.erase(fd); }
+void Channel::rmOperator(int fd) { 
+	_operators.erase(fd);
+}
+
+void Channel::rmMember(int fd) {
+	_members.erase(fd); 
+}
+
+void Channel::rmInvite(int fd) { 
+	_invite.erase(fd);
+}
 
 void Channel::rmUser(int fd)
 {
     if (_operators.find(fd) != _operators.end())
         _operators.erase(fd); 
     else
-        _members.erase(fd); 
+	{
+        _members.erase(fd);
+	}
 }
 
+void Channel::clearInvite() { _invite.clear(); }
 
 std::set<int>	Channel::getOperator()	const {return _operators;}
 
 std::set<int>	Channel::getMember()	const {return _members;}
+
+std::set<int>	Channel::getInvite()	const {return _invite;}
 
 std::set<int>	Channel::getUser()	const 
 {
@@ -144,7 +182,11 @@ void Channel::setMode(const char c, size_t nb)
     if (c == 'l')
         _l = nb;
     else if (c == 'i')
+	{
         _i = (nb > 0);
+		if (!_i)
+			clearInvite();
+	}
     else if (c == 't')
         _t = (nb > 0);
 }
@@ -167,6 +209,15 @@ void Channel::log() const
         if ((++it) != _members.end())
             str += ",";
     }
+
+	str += "> invite <";
+    for (std::set<int>::iterator it = _invite.begin(); it != _invite.end(); )
+    {
+        str += toString(*it);
+        if ((++it) != _invite.end())
+            str += ",";
+    }
+
     str += "> mode \t:";
 
 	str += "\n\t\t\t\t\t password: <" + _password + ">";

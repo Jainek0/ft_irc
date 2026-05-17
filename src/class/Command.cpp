@@ -34,11 +34,6 @@ void Command::handleCommand(Client& user, std::string str)
 
 /* ------------------------------------< commands >------------------------------------ */
 
-void Command::privmsg(Client& user, Cmd& cmd)
-{
-    (void) user;
-    (void) cmd;
-}
 
 void Command::ping(Client& user, Cmd& cmd)
 {
@@ -48,14 +43,85 @@ void Command::ping(Client& user, Cmd& cmd)
 
 void Command::quit(Client& user, Cmd& cmd)
 {
+	(void) cmd;
     (void) user;
-    (void) cmd;
+
+	user.clearChannel();
+    Server& serv = Server::getInstance();
+	serv.rmClient(user.getFd());
+}
+
+
+
+void Command::privmsg(Client& user, Cmd& cmd)
+{
+    Server& serv = Server::getInstance();
+
+	if (cmd.arg(0).empty() || cmd.arg(1).empty())
+		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+
+	std::vector<std::string> lstTarget(split(cmd.arg(0), ','));
+	std::vector<std::string>::iterator itT(lstTarget.begin());
+
+	if ((*itT)[0] == '#')
+	{
+		(*itT).erase(0,1);
+		if (serv.findChannel((*itT)) == serv.endChannel())
+			return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itT)));
+
+		Channel& channel = (*serv.findChannel((*itT))).second;
+		if (channel.findUser(user.getFd()) <= 0)
+			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
+		serv.putMsg(channel, user.getPrefix() + cmd.argcs(1));
+	}
+	else
+	{
+		if (serv.findClient((*itT)) == serv.endClientNick())
+			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
+
+		Client& client = (*serv.findClient((*itT))).second;
+		serv.putMsg(client, cmd.argcs(1));
+	}
 }
 
 void Command::invite(Client& user, Cmd& cmd)
 {
-    (void) user;
-    (void) cmd;
+    Server& serv = Server::getInstance();
+
+	if (cmd.arg(0).empty() || cmd.arg(1).empty())
+		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+
+	std::vector<std::string> lstUser(split(cmd.arg(0), ','));
+	std::vector<std::string>::iterator itU(lstUser.begin()); 
+
+    std::vector<std::string> lstChannel(split(cmd.arg(1), ','));
+    std::vector<std::string>::iterator itC(lstChannel.begin());
+
+	while (itU != lstUser.end())
+	{
+		if (serv.endClientNick() == serv.findClient(*itU))
+			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
+		Client invited(serv.findClient(*itU)->second);
+		while (itC != lstChannel.end())
+		{
+			if ((*itC)[0] != '#')
+				return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), cmd.arg(0)));
+			(*itC).erase(0,1);
+			if (serv.findChannel((*itC)) == serv.endChannel())
+				return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itC)));
+
+			Channel& channel = (*serv.findChannel((*itC))).second;
+			if (channel.findUser(user.getFd()) <= 0)
+				return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), channel.getName()));
+			if (channel.findOperator(user.getFd()) <= 0)
+				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
+
+			channel.addInvite(invited.getFd());
+			serv.putMsg(invited, user.getNickName() + " INVITE " + invited.getNickName() + ":#" + *itC);
+			++itC;
+		}
+		++itU;
+	}
 }
 
 
@@ -117,10 +183,15 @@ void Command::mode(Client& user, Cmd& cmd)
 		}
 		if (*it == 'k')
 		{
-			if (cmd.arg(2 + i).empty())
-				return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
-			channel.setPassword(cmd.arg(2 + i));
-			++i;
+			if (mode)
+			{
+				if (cmd.arg(2 + i).empty())
+					return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+				channel.setPassword(cmd.arg(2 + i));
+				++i;
+			}
+			else
+				channel.setPassword(NULL);
 		}
 		if (*it == 'o')
 		{
@@ -232,7 +303,7 @@ void Command::join(Client& user, Cmd& cmd)
             if (serv.findChannel(*itC) != serv.endChannel())
             {
                 Channel& channel = (*serv.findChannel(*itC)).second;
-                if (channel.getMode('i'))
+                if (channel.getMode('i') && channel.findInvite(user.getFd()) == -1)
                     return serv.putMsg(user, ERR_INVITEONLYCHAN(user.getNickName(), *itC));
                 else if (channel.getMode('l'))
                     return serv.putMsg(user, ERR_CHANNELISFULL(user.getNickName(), *itC));        
