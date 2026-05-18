@@ -12,14 +12,18 @@ class Command
 
 		/*  ------------------< commands >------------------  */
 
-		static void			join			(Client& user, Cmd& cmd);
-		static void			kick			(Client& user, Cmd& cmd);
-		static void			mode			(Client& user, Cmd& cmd);
-		static void			topic			(Client& user, Cmd& cmd);
-		static void			privmsg			(Client& user, Cmd& cmd);
-		static void			ping			(Client& user, Cmd& cmd);
-		static void			quit			(Client& user, Cmd& cmd);
-		static void			invite			(Client& user, Cmd& cmd);
+		static 	void			fJoin		(Client& user, Cmd& cmd);
+		static 	void			fKick			(Client& user, Cmd& cmd);
+		static 	void			fMode			(Client& user, Cmd& cmd);
+		static 	void			fTopic			(Client& user, Cmd& cmd);
+		static 	void			fPrivmsg			(Client& user, Cmd& cmd);
+		static 	void			fPing			(Client& user, Cmd& cmd);
+		static 	void			fQuit			(Client& user, Cmd& cmd);
+		static 	void			fInvite			(Client& user, Cmd& cmd);
+
+		static 	void			fUser			(Client& user, Cmd& cmd);
+		static 	void			fNick			(Client& user, Cmd& cmd);
+		static	void			fPass			(Client& user, Cmd& cmd);
 
 
 

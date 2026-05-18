@@ -13,7 +13,8 @@ class Server
 		void							putMsg			(const Channel& target,const std::string& msg)	const;
 
 		
-		bool 							checkClient		(const std::string fd) 							const;
+		bool 							checkPass		(const std::string pass) 						const;
+		bool 							checkClient		(const std::string nick) 						const;
 		bool 							checkClient		(const int fd) 									const;
 
 		mapClient_i_t::const_iterator	endClientFd		()												const;

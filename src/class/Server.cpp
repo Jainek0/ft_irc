@@ -87,20 +87,24 @@ mapChannel_t::iterator     		Server::beginChannel()      						{ return (_channe
 
 bool                       		Server::checkClient(const int fd) 			const	{ return (_clientsFd.find(fd) != _clientsFd.end()); }
 
-bool                       		Server::checkClient(const std::string Name)	const  	{ return (_clientsNick.find(Name) != _clientsNick.end()); }
+bool                       		Server::checkClient(const std::string nick)	const  	{ return (_clientsNick.find(nick) != _clientsNick.end()); }
+
+bool                       		Server::checkPass(const std::string pass)	const  	{ return (_password == pass); }
+
+
+
 
 
 /* ------------------------------------< work in progres >------------------------------------ */
 
 void Server::acceptClient()
 {
-	// demander le password du serv ici, avent de creer user, puis completer info client.
 	Client tmp(4242);
 
 
 	tmp.setNickName("le_bg");
 	tmp.setUserName("kilian");
-
+	tmp.setAuthenti();
 
 	_clientsFd.insert(std::make_pair(4242, tmp));
 	_clientsNick.insert(std::make_pair(tmp.getNickName(), tmp));

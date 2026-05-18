@@ -2,11 +2,11 @@
 #include "../_header/irc.hpp"
 
 Client::Client(int fd)
-    : _fd(fd)
+    : _fd(fd), _authenticated(0)
 {}
 
 Client::Client(const Client &other)
-    : _fd(other._fd), _userName(other._userName), _nickName(other._nickName)
+    : _fd(other._fd), _userName(other._userName), _nickName(other._nickName), _authenticated(0)
 {}
 
 // Client& Client::operator=(const Client &other)
@@ -39,10 +39,14 @@ Client::~Client()
 const std::string Client::getNickName() const { return _nickName; }
 
 const std::string Client::getUserName() const { return _userName; }
+
 const std::string Client::getPrefix() const { return (":" + _nickName + "@" + _userName); }
 
-
 int Client::getFd() const { return _fd; }
+
+bool Client::getAuthenti() const { return _authenticated; }
+
+void Client::setAuthenti() { _authenticated = 1; }
 
 void Client::setNickName(const std::string nickName) { _nickName = nickName; }
 

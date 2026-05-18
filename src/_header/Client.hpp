@@ -14,9 +14,11 @@ class Client
 		const std::string		getUserName	() 			  const;
 		const std::string		getPrefix	() 			  const;
 		int						getFd		()			  const;
+		bool					getAuthenti	()			  const;
 
 		void					setNickName	(const std::string);
 		void					setUserName	(const std::string);
+		void					setAuthenti	();
 
 		void					addChannel	(const std::string);
 		void					rmChannel	(const std::string);
@@ -28,6 +30,7 @@ class Client
 		std::string 			_userName;
 		std::string 			_nickName;
 		std::set<std::string>	_channels;
+		bool					_authenticated;
 
 		
 	/*  ------------------< ban >------------------*/

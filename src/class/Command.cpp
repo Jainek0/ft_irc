@@ -6,14 +6,16 @@ mapCommand_t Command::createCommands()
 {
     mapCommand_t commands;
 
-    commands["KICK"] = &Command::kick;
-    commands["JOIN"] = &Command::join;
-    commands["MODE"] = &Command::mode;
-    commands["TOPIC"] = &Command::topic;
-	commands["PRIVMSG"] = &Command::privmsg;
-    commands["PING"] = &Command::ping;
-    commands["QUIT"] = &Command::quit;
-    commands["INVITE"] = &Command::invite;
+    commands["KICK"] = &Command::fKick;
+    commands["JOIN"] = &Command::fJoin;
+    commands["MODE"] = &Command::fMode;
+    commands["TOPIC"] = &Command::fTopic;
+	commands["PRIVMSG"] = &Command::fPrivmsg;
+    commands["PING"] = &Command::fPing;
+    commands["QUIT"] = &Command::fQuit;
+    commands["INVITE"] = &Command::fInvite;
+	commands["USER"] = &Command::fUser;
+    commands["NICK"] = &Command::fNick;
 
     return commands;
 }
@@ -23,8 +25,19 @@ void Command::handleCommand(Client& user, std::string str)
     static mapCommand_t commands = createCommands();
     Server& serv = Server::getInstance();
     
-    Cmd cmd(str);
-    mapCommand_t::iterator itCmd(commands.find(cmd.command()));
+	Cmd cmd(str);
+	
+	if (!user.getAuthenti())
+	{
+		if (cmd.command() == "USER")
+			return fUser(user, cmd);
+		if (cmd.command() == "NICK")
+			return fNick(user, cmd);
+		if (cmd.command() == "PASS")
+			return fPass(user, cmd);
+	}
+	
+	mapCommand_t::iterator itCmd(commands.find(cmd.command()));
 
     if (itCmd != commands.end())
         (itCmd->second)(user, cmd);
@@ -34,14 +47,88 @@ void Command::handleCommand(Client& user, std::string str)
 
 /* ------------------------------------< commands >------------------------------------ */
 
+void Command::fPass(Client& user, Cmd& cmd)
+{
+    Server& serv = Server::getInstance();
 
-void Command::ping(Client& user, Cmd& cmd)
+	if (cmd.arg(0).empty())
+		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+	
+	if (user.getNickName().empty())
+		return serv.putMsg(user, "0 :plz use NICK <nick name>");
+	if (user.getUserName().empty())
+		return serv.putMsg(user, "0 :plz use USER <user name>");
+
+	if (!serv.checkPass(cmd.arg(0)))
+		return serv.putMsg(user, ERR_PASSWDMISMATCH(user.getNickName()));
+
+	user.setAuthenti();
+}
+
+bool checkName(std::string name)
+{
+	if (isdigit(name[0]))
+		return true;
+	if (name.find(',') != std::string::npos || \
+		name.find(':') != std::string::npos || \
+		name.find(' ') != std::string::npos || \
+		name.find('*') != std::string::npos || \
+		name.find('?') != std::string::npos || \
+		name.find('!') != std::string::npos || \
+		name.find('@') != std::string::npos )
+		return true;
+    for (size_t i = 0; i < name.size(); i++)
+    {
+        if (iscntrl(name[i]))
+            return true;
+    }
+    return false;
+}
+
+
+void Command::fNick(Client& user, Cmd& cmd)
+{
+    Server& serv = Server::getInstance();
+
+	if (cmd.arg(0).empty())
+		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+
+	if (checkName(cmd.arg(0)))
+		return serv.putMsg(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
+	
+	if (serv.checkClient(cmd.arg(0)))
+		return serv.putMsg(user, ERR_NICKNAMEINUSE(user.getNickName(), cmd.arg(0)));
+	if (serv.checkClient(user.getNickName()))
+		serv.rmClient(user.getNickName());
+	user.setNickName(cmd.arg(0));
+	serv.addClient(cmd.arg(0), user);
+}
+
+
+void Command::fUser(Client& user, Cmd& cmd)
+{
+    Server& serv = Server::getInstance();
+
+	if (cmd.arg(0).empty())
+		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+
+	
+}
+
+
+/* ------------------------------------< commands >------------------------------------ */
+
+
+
+
+
+void Command::fPing(Client& user, Cmd& cmd)
 {
     (void) user;
     (void) cmd;
 }
 
-void Command::quit(Client& user, Cmd& cmd)
+void Command::fQuit(Client& user, Cmd& cmd)
 {
 	(void) cmd;
     (void) user;
@@ -53,7 +140,7 @@ void Command::quit(Client& user, Cmd& cmd)
 
 
 
-void Command::privmsg(Client& user, Cmd& cmd)
+void Command::fPrivmsg(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
@@ -84,7 +171,7 @@ void Command::privmsg(Client& user, Cmd& cmd)
 	}
 }
 
-void Command::invite(Client& user, Cmd& cmd)
+void Command::fInvite(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
@@ -135,7 +222,7 @@ void Command::invite(Client& user, Cmd& cmd)
 
 bool isTokenMode(char c) {return (c == 'i' || c == 't' || c == 'k' || c == 'o' || c == 'l');}
 
-void Command::mode(Client& user, Cmd& cmd)
+void Command::fMode(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
@@ -210,7 +297,7 @@ void Command::mode(Client& user, Cmd& cmd)
 	channel.log();
 }
 
-void Command::topic(Client& user, Cmd& cmd)
+void Command::fTopic(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
@@ -240,7 +327,7 @@ void Command::topic(Client& user, Cmd& cmd)
 
 
 
-void Command::kick(Client& user, Cmd& cmd)
+void Command::fKick(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
@@ -285,7 +372,7 @@ void Command::kick(Client& user, Cmd& cmd)
 }
 
 
-void Command::join(Client& user, Cmd& cmd)
+void Command::fJoin(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
     std::vector<std::string> joinChannel(split(cmd.arg(0), ','));
