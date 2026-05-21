@@ -1,11 +1,11 @@
 #include "src/header/irc.hpp"
 
-int	init(Server myserver, int port, char *password)
+int	init(Server myserver)//, struct sigaction &signal)
 {
 	try
 	{
-		myserver.setup(port, password);
-		std::cout << "Server listening on port " << _port << std::endl;
+		myserver.setup();
+		std::cout << "Server listening on port " << myserver.getPort() << std::endl;
 	}
 	catch(std::exception &e)
 	{
@@ -15,7 +15,7 @@ int	init(Server myserver, int port, char *password)
 	}
 	//setup signal
 	
-	return (0)
+	return (0);
 }
 
 int	main(int argc, char **argv)
@@ -28,27 +28,29 @@ int	main(int argc, char **argv)
 		std::cout << "./ircserv Port<int>(1024-65535) Password<string>" << std::endl;
 		return 0;
 	}
+
 	Server	myserver(port, argv[2]);
-	if (init(myserver))
+	// struct sigaction	signal;
+	// memset(&signal, 0, sizeof(signal));
+	if (init(myserver))//, signal
 		return (1);
 	//main loop
 	while(1)//while sigal == false
 	{
-		int retpoll = (poll(&(myserver._myfds), myserver._myfds.size(), -1))
-		if (retpoll == -1)
+		if (poll(myserver.getPollfds(), 1024, -1) == -1)
 		{
 			std::cout << "poll error" << std::endl;
 			//close all fds
-			exit(1);
+			return(1);
 		}
 		for(int i = 0; i < 1023; i++)
 		{
-			if (myserver._myfds[i].revents == POLLIN)//&POLLIN?
+			if ((myserver.getPollfds(i)).revents == POLLIN)//&POLLIN?
 			{
-				if (myserver._myfds[i].fd == myserver._servfd)
+				if ((myserver.getPollfds(i)).fd == myserver.getServFd())
 					myserver.acceptClient();
 				else
-					myserver.recieveData(fds[i].fd);
+					myserver.recieveData((myserver.getPollfds(i)).fd);
 			}
 		}
 	}

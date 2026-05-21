@@ -1,8 +1,8 @@
 
 #ifndef CMD_HPP
-#define CMD_HPP
+# define CMD_HPP
 
-#include "irc.hpp"
+# include "irc.hpp"
 
 class Cmd
 {

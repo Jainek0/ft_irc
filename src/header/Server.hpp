@@ -14,10 +14,13 @@ class Server
 		~Server();
 
 		//getters/setters
-		const int			&getPort(void)const;
-		const std::string	&getPassword(void)const;
-		const std::map		&getClients(void)const;
-		const std::map		&getChannels(void)const;
+		int			&getPort(void)const;
+		std::string	&getPassword(void)const;
+		// const std::map		&getClients(void)const;
+		// const std::map		&getChannels(void)const;
+		struct pollfd		*getPollfds(void)const;
+		struct pollfd		getPollfds(int i)const;
+		int			getServFd(void)const;
 		void	setPort(const int &port);
 		void	setPassword(const std::string &password);
 		
@@ -26,22 +29,22 @@ class Server
 		int		acceptClient(void);
 		void	removeClient(int fd);
 		void	recieveData(int fd);
-		void	addChannel(Channel &new);
+		void	addChannel(const std::string name, Channel channel);
 		void	handleCommand(int fd, std::string cmd);
 
 		class	SetupErrorException : public std::exception
 		{
 			public:
 			virtual const char	*what()const throw();
-		}
+		};
 			
 	private:
 		int					_servfd;
-		struct pollfd		_fdslist[1024];
+		struct pollfd		_pollfds[1024];
 		int 				_port;//doublon. might be useful.
 		struct sockaddr_in	_servaddr;
 		std::string			_password;
-		struct pollfd		_pollfds;//
+		// struct pollfd		_pollfds;
 		std::map<int, Client>			_clientsFd;
 		std::map<std::string, Client>	_clientsNick;
 		std::map<std::string, Channel>	_channels;

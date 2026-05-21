@@ -16,9 +16,9 @@
 
 /*  ------------------- {SRC} -------------------  */
 
+# include "Client.hpp"
 # include "Channel.hpp"
 # include "Server.hpp"
-# include "Client.hpp"
 
 /*  ------------------- {define} -------------------  */
 

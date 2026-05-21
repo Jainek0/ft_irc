@@ -29,14 +29,14 @@ void	Server::setup(void)
 	}
 	for(int i = 0; i < 1023; i++)
 	{
-		if(!_fdslist[i].fd)
+		if(!_pollfds[i].fd)
 		{
-			_fdslist[i].fd = _servfd;
+			_pollfds[i].fd = _servfd;
 			//setup event & revent;
 			break;
 		}
 	}
-	_fdslist[0].fd = _servfd;//bzero struct?
+	_pollfds[0].fd = _servfd;//bzero struct?
 }
 
 Server::Server(int port, std::string password): _port(port), _password(password)
@@ -67,25 +67,36 @@ Server	&Server::operator=(const Server &og)
 }
 
 //getters/setters
-const int	&Server::getPort(void)const
+int	&Server::getPort(void)const
 {
 	return (_port);
 }
 
-const std::string	&Server::getPassword(void)const
+const struct pollfd		*getPollfds(void)const;
+{
+	return (_pollfds);
+}
+
+const struct pollfd		getPollfds(int  i)const;
+{
+	return (_pollfds[i]);
+}
+
+
+std::string	&Server::getPassword(void)const
 {
 	return (_password);
 }
 
-const std::map	&Server::getClients(void)const
-{
-	return (_clients);
-}
+// const std::map	&Server::getClients(void)const
+// {
+// 	return (_clients);
+// }
 
-const std::map	&Server::getChannels(void)const
-{
-	return (_channels);
-}
+// const std::map	&Server::getChannels(void)const
+// {
+// 	return (_channels);
+// }
 
 void	Server::setPort(const int &port)
 {
@@ -95,6 +106,11 @@ void	Server::setPort(const int &port)
 void	Server::setPassword(const std::string &password)
 {
 	_password = password;
+}
+
+int	Server::getServFd(void)const;
+{
+	return (_servfd);
 }
 
 //exceptions
@@ -121,9 +137,9 @@ int	Server::acceptClient(void)
 	//add clientfd in the pollfd arr.
 	for(int i = 0; i < 1023; i++)
 	{
-		if(!_fdslist[i].fd)
+		if(!_pollfds[i].fd)
 		{
-			_fdslist[i].fd = clientfd;
+			_pollfds[i].fd = clientfd;
 			//setup event & revent;
 			break;
 		}
@@ -140,9 +156,9 @@ void	Server::removeClient(Client	&client)
 	int	clientfd = client.getFd();
 	for(int i = 0; i > 1023; i++)
 	{
-		if(_fdslist[i].fd == clientfd)
+		if(_pollfds[i].fd == clientfd)
 		{
-			_fdslist[i].fd = 0;
+			_pollfds[i].fd = 0;
 			close(clientfd);
 			//client.~Client();??
 			return;

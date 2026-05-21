@@ -32,10 +32,10 @@ void Command::handleCommand(Client& user, std::string str)
 
 void	Command::nickname(Client &user, )
 {
-	char	*buffer;//size?
+	char	buffer[1000];//size?
 
 	send(user.getFd(), "nickname: \n", 11, O_NONBLOCK);
-	recv(user.getFd(), buffer, buffsize, O_NONBLOCK);//loop gnl?
+	recv(user.getFd(), buffer, sizeof(buffer), O_NONBLOCK);//loop gnl?
 
 	it = ((Server::getInstance()).getClientsFd).find(user.getFd());
 	it->setNickname(buffer);
@@ -51,10 +51,10 @@ void	Command::nickname(Client &user, )
 
 void	Command::username(Client &user, )
 {
-	char	*buffer;//size?
+	char	buffer[1000];//size?
 
 	send(user.getFd(), "username: \n", 11, O_NONBLOCK);
-	recv(user.getFd(), buffer, buffsize, O_NONBLOCK);//loop gnl?
+	recv(user.getFd(), buffer, sizeof(buffer), O_NONBLOCK);//loop gnl?
 
 	it = ((Server::getInstance()).getClientsFd).find(user.getFd());
 	it->setUsername(buffer);
