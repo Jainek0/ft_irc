@@ -6,10 +6,10 @@
 class Channel
 {
 	public:
-		Channel(std::string channel_name, int op ,std::string pasword);
-		Channel(std::string channel_name, int op);
+		Channel(std::string channel_name, std::string pasword);
+		Channel(std::string channel_name);
 		Channel(Channel& other);
-		Channel& operator=(const Channel& other);
+		Channel& operator=(Channel& other);
 		~Channel();
 
 	private:

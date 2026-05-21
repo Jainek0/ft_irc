@@ -1,12 +1,7 @@
 NAME = ircserv
-SRC =	test.cpp \
-		\
-		src/obj/Cmd.cpp \
-		src/obj/Client.cpp \
-		src/obj/Channel.cpp \
-		#$(wildcard src/*.cpp) \
-		\
-		#$(wildcard src/obj/*.cpp) \
+SRC =	main.cpp \
+		src/Server.cpp
+
 
 OBJ = $(SRC:.cpp=.o)
 

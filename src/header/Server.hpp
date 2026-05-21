@@ -1,26 +1,50 @@
 
 #ifndef SERVER_HPP
-#define SERVER_HPP
+# define SERVER_HPP
 
-#include "irc.hpp"
+# include "irc.hpp"
 
 class Server
 {
 	public:
-		Server(int pid, std::string password);
+		//constructor/destructor
+		Server(int port, std::string password);
 		Server(Server &other);
 		Server& operator=(const Server &other);
 		~Server();
 
-		void acceptClient();
-		void removeClient(int fd);
-		void handleCommand(int fd, std::string cmd);
+		//getters/setters
+		const int			&getPort(void)const;
+		const std::string	&getPassword(void)const;
+		const std::map		&getClients(void)const;
+		const std::map		&getChannels(void)const;
+		void	setPort(const int &port);
+		void	setPassword(const std::string &password);
+		
+		//member functions
+		void	setup(void);
+		int		acceptClient(void);
+		void	removeClient(int fd);
+		void	recieveData(int fd);
+		void	addChannel(Channel &new);
+		void	handleCommand(int fd, std::string cmd);
+
+		class	SetupErrorException : public std::exception
+		{
+			public:
+			virtual const char	*what()const throw();
+		}
 			
 	private:
-		int 		_pid;
-		std::string	_pasword;
-		std::map<int,Client> _clients;
-		std::map<std::string, Channel> _channels;
+		int					_servfd;
+		struct pollfd		_fdslist[1024];
+		int 				_port;//doublon. might be useful.
+		struct sockaddr_in	_servaddr;
+		std::string			_password;
+		struct pollfd		_pollfds;//
+		std::map<int, Client>			_clientsFd;
+		std::map<std::string, Client>	_clientsNick;
+		std::map<std::string, Channel>	_channels;
 };
 
 #endif
