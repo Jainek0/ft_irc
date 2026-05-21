@@ -10,13 +10,17 @@
 # include <cstdio>//perror
 # include <cerrno>//errno
 # include <cstdlib>//exit
+# include <cstring>//memset
 # include <unistd.h>//close
 # include <poll.h>//poll
 # include <csignal>//signal
 
 /*  ------------------- {SRC} -------------------  */
 
+class Server;
+
 # include "Client.hpp"
+# include "Command.hpp"
 # include "Channel.hpp"
 # include "Server.hpp"
 

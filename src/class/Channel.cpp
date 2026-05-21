@@ -1,6 +1,6 @@
 
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
 Channel::Channel(std::string channel_name, int op ,std::string pasword)
     : _channel_name(channel_name), _pasword(pasword)

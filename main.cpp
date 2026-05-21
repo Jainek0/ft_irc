@@ -1,6 +1,6 @@
-#include "src/header/irc.hpp"
+#include "src/_header/irc.hpp"
 
-int	init(Server myserver)//, struct sigaction &signal)
+int	init(Server &myserver)//, struct sigaction &signal)
 {
 	try
 	{
@@ -29,7 +29,7 @@ int	main(int argc, char **argv)
 		return 0;
 	}
 
-	Server	myserver(port, argv[2]);
+	Server &myserver = Server::getInstance(port, argv[2]);
 	// struct sigaction	signal;
 	// memset(&signal, 0, sizeof(signal));
 	if (init(myserver))//, signal

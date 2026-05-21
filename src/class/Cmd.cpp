@@ -1,5 +1,5 @@
 
-#include "../header/irc.hpp"
+#include "../_header/irc.hpp"
 
 Cmd::Cmd(std::string& str)
 {

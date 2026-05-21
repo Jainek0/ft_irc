@@ -1,9 +1,8 @@
-#include "header/irc.hpp"
+#include "../_header/irc.hpp"
 
 //Constructor/destructor
-Client::Client(void): 
+Client::Client(int fd): _fd(fd)
 {
-
 	std::cout << "Client obj created" << std::endl;
 }
 
@@ -21,7 +20,8 @@ Client::~Client(void)
 //overload operators
 Client	&Client::operator=(Client &og)
 {
-	
+	(void)og;
+	return(*this);
 }
 
 //getters/setters

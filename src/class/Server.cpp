@@ -1,4 +1,4 @@
-#include "header/irc.hpp"
+#include "_header/irc.hpp"
 
 //constructor/destructor
 void	Server::setup(void)
@@ -36,7 +36,8 @@ void	Server::setup(void)
 			break;
 		}
 	}
-	_pollfds[0].fd = _servfd;//bzero struct?
+	memset(&_pollfds, 0, sizeof(_pollfds));
+	_pollfds[0].fd = _servfd;
 }
 
 Server::Server(int port, std::string password): _port(port), _password(password)
@@ -61,29 +62,30 @@ Server	&Server::operator=(const Server &og)
 	_port = og._port;
 	//servaddr struct = ...
 	_password = og._password;
-	_clients = og._clients;
-	_channels = og._channels;
+	// _clientsFd = og._clientsFd;//instantiation issue
+	// _clientsNick = og._clientsNick;//instantiation issue
+	// _channels = og._channels;//instantiation issue
 	return (*this);
 }
 
 //getters/setters
-int	&Server::getPort(void)const
+const int	&Server::getPort(void)const
 {
 	return (_port);
 }
 
-const struct pollfd		*getPollfds(void)const;
+struct pollfd		*Server::getPollfds(void)
 {
 	return (_pollfds);
 }
 
-const struct pollfd		getPollfds(int  i)const;
+struct pollfd		Server::getPollfds(int  i)
 {
 	return (_pollfds[i]);
 }
 
 
-std::string	&Server::getPassword(void)const
+const std::string	&Server::getPassword(void)const
 {
 	return (_password);
 }
@@ -108,7 +110,7 @@ void	Server::setPassword(const std::string &password)
 	_password = password;
 }
 
-int	Server::getServFd(void)const;
+int	Server::getServFd(void)const
 {
 	return (_servfd);
 }
@@ -144,14 +146,14 @@ int	Server::acceptClient(void)
 			break;
 		}
 	}
-	_clientsFd.insert({clientfd, Client(clientfd, nickname, username)});
+	_clientsFd.insert(std::make_pair(clientfd, Client(clientfd)));
 	return (clientfd);
 }
 
 void	Server::removeClient(Client	&client)
 {
-	_clientsFd.erease(client.getFd());
-	_clientsNick.erease(client.getNickname());
+	_clientsFd.erase(client.getFd());
+	_clientsNick.erase(client.getNick());
 
 	int	clientfd = client.getFd();
 	for(int i = 0; i > 1023; i++)
@@ -166,15 +168,17 @@ void	Server::removeClient(Client	&client)
 	}
 }
 
-void	Server::recieveData(int fd);
+void	Server::recieveData(int fd)
 {
-	recv(fd, buff, buffsize);
+	(void)fd;
+	// recv(fd, buff, buffsize);
 	//parse();
 }
 
-void	Server::addChannel(Channel &new)
+void	Server::addChannel(const std::string name, Channel channel)
 {
-
+	(void)name;
+	(void)channel;
 }
 
 // void	Server::handleCommand(int fd, std::string cmd)
