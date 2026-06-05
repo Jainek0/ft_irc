@@ -37,14 +37,14 @@ void	Command::nickname(Client &user)
 	send(user.getFd(), "nickname: \n", 11, SOCK_NONBLOCK);
 	recv(user.getFd(), buffer, sizeof(buffer), SOCK_NONBLOCK);//loop gnl?
 
-	std::map<int, Client>::const_iterator it;
-	it = ((Server::getInstance()).getClientsFd).find(user.getFd());
-	it->setNickname(buffer);
-	if(user.getNickname())
+	std::map<int, Client>::iterator it;
+	it = ((Server::getInstance()).getMapClientsFd()).find(user.getFd());
+	it->second.setNickname(buffer);
+	if(user.getNickname() != "")
 	{
-		(Server::getInstance()).getClientsNick().erase(user.getNickname());
+		((Server::getInstance()).getMapClientsNick()).erase(user.getNickname());
 	}
-	(Server::getInstance()).(getClientsNick).insert({buffer, Client(user.getFd(), buffer, user.getUsername())});
+	((Server::getInstance()).getMapClientsNick()).insert({buffer, Client(user.getFd(), buffer, user.getUsername())});
 	user.setNickname(buffer);
 }
 
@@ -55,13 +55,14 @@ void	Command::username(Client &user)
 	send(user.getFd(), "username: \n", 11, SOCK_NONBLOCK);
 	recv(user.getFd(), buffer, sizeof(buffer), SOCK_NONBLOCK);//loop gnl?
 
-	std::map<int, Client>::const_iterator it;
-	it = ((Server::getInstance()).getClientsFd()).find(user.getFd());
-	it->setUsername(buffer);
-	if (user.getNickname())
+	std::map<int, Client>::iterator it;
+	it = ((Server::getInstance()).getMapClientsFd()).find(user.getFd());
+	it->second.setUsername(buffer);
+	if (user.getNickname() != "")
 	{
-		it = ((Server::getInstance()).getClientsNick()).find(user.getNickname());
-		it->setUsername(buffer);
+		std::map<std::string, Client>::iterator it2;
+		it2 = ((Server::getInstance()).getMapClientsNick()).find(user.getNickname());
+		it2->second.setUsername(buffer);
 	}
 	user.setUsername(buffer);
 }

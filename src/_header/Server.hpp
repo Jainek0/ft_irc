@@ -14,10 +14,10 @@ class Server
 			return server;}
 
 		//getters/setters
-		const int		&getPort(void)const;
-		const std::string		&getPassword(void)const;
-		const std::map<int, Client>	&getClientsFd(void)const{return (_clientsFd);}
-		const std::map<std::string, Client>	&getClientsNick(void)const{return (_clientsNick);}
+		const int			&getPort(void)const;
+		const std::string	&getPassword(void)const;
+		const std::map<int, Client>			&getMapClientsFd(void)const{return (_mapClientsFd);}
+		const std::map<std::string, Client>	&getMapClientsNick(void)const{return (_mapClientsNick);}
 		//	&getChannels(void)const;
 		struct pollfd		*getPollfds(void);
 		struct pollfd		getPollfds(int i);
@@ -45,9 +45,8 @@ class Server
 		int 				_port;//doublon. might be useful.
 		struct sockaddr_in	_servaddr;
 		std::string			_password;
-		// struct pollfd		_pollfds;
-		std::map<int, Client>			_clientsFd;
-		std::map<std::string, Client>	_clientsNick;
+		std::map<int, Client>			_mapClientsFd;
+		std::map<std::string, Client>	_mapClientsNick;
 		std::map<std::string, Channel>	_channels;
 
 		//---------------------------------------//

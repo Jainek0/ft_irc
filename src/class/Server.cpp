@@ -10,7 +10,12 @@ void	Server::setup(void)
 		throw Server::SetupErrorException();
 	}
 	//if (setsockopt(SO_REUSEADDR));??
-	//if (fcntl(O_NONBLOCK));??
+	// int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
+	{
+		std::cout << "fcntl()";
+		throw Server::SetupErrorException();
+	}
 
 	//vv set values in the sockaddr struct vv
 	_servaddr.sin_family = AF_INET;
@@ -32,7 +37,8 @@ void	Server::setup(void)
 		if(!_pollfds[i].fd)
 		{
 			_pollfds[i].fd = _servfd;
-			//setup event & revent;
+			_pollfds[i].events = POLLIN;
+			_pollfds[i].revents = 0;
 			break;
 		}
 	}
@@ -51,6 +57,11 @@ Server::Server(Server &og)
 
 Server::~Server(void)
 {
+	for (int i = 0; i < 1024; i++)
+	{
+		if (_pollfds[i])
+			close (_pollfds[i]);
+	}
 	std::cout << "Server destroyed" << std::endl;
 }
 
@@ -62,7 +73,7 @@ Server	&Server::operator=(const Server &og)
 	_port = og._port;
 	//servaddr struct = ...
 	_password = og._password;
-	// _clientsFd = og._clientsFd;//instantiation issue
+	// _mapClientsFd = og._mapClientsFd;//instantiation issue
 	// _clientsNick = og._clientsNick;//instantiation issue
 	// _channels = og._channels;//instantiation issue
 	return (*this);
@@ -124,36 +135,47 @@ const char	*Server::SetupErrorException::what()const throw()
 //member functions
 int	Server::acceptClient(void)
 {
+	Client		newclient;
 	int			clientfd;
 	socklen_t	addrsize;
+	struct sockaddr_in	clientip;
 
-	addrsize = sizeof(_servaddr);
-	clientfd = accept(_servfd, (struct sockaddr *)&_servaddr, &addrsize);
+	addrsize = sizeof(clientip);
+	clientfd = accept(_servfd, (struct sockaddr *)&clientip, &addrsize);
 	if (clientfd == -1)
 	{
 		std::cout << "client connection failed" << std::endl;
 		perror("client");
 		return (-1);
 	}
-	std::cout << "fd " << clientfd << " opened for client" << std::endl;
+	if (fcntl(clientfd, F_SETFL ,O_NONBLOCK))
+	{
+		std::cout << "client connection failed" << std::endl;
+		perror("client");
+		return (-1);
+	}
+	newclient.setFd(clientfd);
+	newclient.setIp(inet_ntoa(clientip.sin_addr));
+	_mapClientsFd.insert(std::make_pair(clientfd, newclient));
 	//add clientfd in the pollfd arr.
 	for(int i = 0; i < 1023; i++)
 	{
 		if(!_pollfds[i].fd)
 		{
 			_pollfds[i].fd = clientfd;
-			//setup event & revent;
+			_pollfds[i].events = POLLIN;
+			_pollfds[i].revents = 0;
 			break;
 		}
 	}
-	_clientsFd.insert(std::make_pair(clientfd, Client(clientfd)));
+	std::cout << "fd " << clientfd << " opened for client" << std::endl;
 	return (clientfd);
 }
 
 void	Server::removeClient(Client	&client)
 {
-	_clientsFd.erase(client.getFd());
-	_clientsNick.erase(client.getNick());
+	_mapClientsFd.erase(client.getFd());
+	_mapClientsNick.erase(client.getNick());
 
 	int	clientfd = client.getFd();
 	for(int i = 0; i > 1023; i++)
@@ -170,18 +192,12 @@ void	Server::removeClient(Client	&client)
 
 void	Server::recieveData(int fd)
 {
-	(void)fd;
-	// recv(fd, buff, buffsize);
-	//parse();
+	char		buff[1024];
+	std::string	msg;
+
+	//store message in a string.
+	while (recv(fd, buff, 1024, ))
+		msg += buff.c_str();
+
+	Command::handleCommand(_mapClientsFd[fd], msg);
 }
-
-void	Server::addChannel(const std::string name, Channel channel)
-{
-	(void)name;
-	(void)channel;
-}
-
-// void	Server::handleCommand(int fd, std::string cmd)
-// {
-
-// }

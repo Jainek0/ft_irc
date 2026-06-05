@@ -13,12 +13,14 @@ class Client
 		~Client();
 
 		//getters/setters
-		int	getFd(void)const{return (_fd);}
+		const int			&getFd(void)const{return (_fd);}
 		const std::string	&getNickname(void)const{return(_nick);}
 		void	setNickname(std::string nick){_nick = nick;}
 		void	setUsername(std::string username){_username = username;}
 		bool					getAuthenti	()const{return(_authenticated);}
 		void					setAuthenti	(){_authenticated = 1;}
+		void					setFd(int fd){_fd = fd;}
+		void					setIp(std::string ip){_ip = ip;}
 
 	private:
 		int 			_fd;
