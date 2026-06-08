@@ -10,7 +10,8 @@ void	Server::setup(void)
 		throw Server::SetupErrorException();
 	}
 	//if (setsockopt(SO_REUSEADDR));??
-	// int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
+	//int endian = 1;
+	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
 	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
 	{
 		std::cout << "fcntl()";
