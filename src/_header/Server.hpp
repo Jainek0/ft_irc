@@ -8,6 +8,7 @@ class Server
 {
 	public:
 		~Server();
+		void							setup			(void);
 
 		void							putMsg			(const Client& target, const std::string& msg)	const;
 		void							putMsg			(const Channel& target,const std::string& msg)	const;
@@ -21,13 +22,23 @@ class Server
 		mapClient_s_t::const_iterator	endClientNick	()												const;
 		mapChannel_t::const_iterator	endChannel		()												const;
 
-		void 							acceptClient	();
+		void 							acceptClient	(void);
 		void 							rmClient		(const int fd);
 		void 							rmClient		(const std::string str);
+		void							recieveData		(int fd);
 			
 		void							addClient		(const int fd, Client user);
 		void							addClient		(const std::string Name, Client user);
 		void							addChannel		(const std::string name, Channel channel);
+
+		//getters/setters
+		const int						&getPort		(void)const;
+		const std::string				&getPassword	(void)const;
+		const std::map<int, Client>			&getMapClientsFd(void)const{return (_mapClientsFd);}
+		const std::map<std::string, Client>	&getMapClientsNick(void)const{return (_mapClientsNick);}
+		struct pollfd					*getPollfds		(void);
+		struct pollfd					getPollfds		(int i);
+		int								getServFd		(void)const;
 	
 		mapClient_i_t::iterator			findClient		(const int fd);
 		mapClient_s_t::iterator			findClient		(const std::string Name);
@@ -41,9 +52,17 @@ class Server
 		static Server& 					getInstance		(int fd = -1, std::string password = "");
 		
 
+		class	SetupErrorException : public std::exception
+		{
+			public:
+			virtual const char	*what()const throw();
+		};
 
 	private:
-		const int					_fd;
+		int							_servfd;
+		struct pollfd				_pollfds[1024];
+		int 						_port;//double. might be useful.
+		struct sockaddr_in			_servaddr;
 		const std::string			_password;
 		mapClient_i_t				_clientsFd;
 		mapClient_s_t				_clientsNick;

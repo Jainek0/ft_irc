@@ -1,4 +1,3 @@
-
 #ifndef COMMAND_HPP
 # define COMMAND_HPP
 
@@ -25,44 +24,16 @@ class Command
 		static 	void			fNick			(Client& user, Cmd& cmd);
 		static	void			fPass			(Client& user, Cmd& cmd);
 
-
-
-
+		void					nickname		(Client &user);
+		void					username		(Client &user);
+		void					password		(Client &user);
 
 	private:
-
 		static mapCommand_t	createCommands	();
-
 		/*  ------------------< ban >------------------  */
-
 		~Command	();
 		Command		();
 };
 
 #endif
 
-	/*
-	NICK → pseudo
-	USER → username/login
-
-	PRIVMSG → message privé / channel
-	PING → keepalive
-	QUIT → déconnexion
-
-	PASS → mot de passe du serveur
-	PART → déconnexion du channel
-	INVITE → invite channel
-
-		*/
-	// [
-	// 	∗ KICK - Eject a client from the channel
-	// 	∗ INVITE - Invite a client to a channel
-	// 	∗ TOPIC - Change or view the channel topic
-	// 	∗ MODE - Change the channel’s mode:
-	// 		· i: Set/remove Invite-only channel
-	// 		· t: Set/remove the restrictions of the TOPIC command to channel
-	// 		operators
-	// 		· k: Set/remove the channel key (password)
-	// 		· o: Give/take channel operator privilege
-	// 		· l: Set/remove the user limit to channel
-	// ]

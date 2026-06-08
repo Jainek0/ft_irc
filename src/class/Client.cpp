@@ -1,4 +1,3 @@
-
 #include "../_header/irc.hpp"
 
 Client::Client(int fd)
@@ -55,5 +54,3 @@ void Client::setUserName(const std::string username) { _userName = username; }
 void Client::addChannel(const std::string channel) { _channels.insert(channel); }
 
 void Client::rmChannel(const std::string channel) { _channels.erase(channel); }
-
-

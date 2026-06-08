@@ -1,15 +1,15 @@
-
+<<<<<<< HEAD
 
 #include "../_header/irc.hpp"
 
 Server::Server(int fd, std::string password)
-	: _fd(fd), _password(password) 
+	: _servfd(fd), _password(password) 
 {
 	logScript( LOG_START(toString(fd)));
 }
 
 Server::Server(const Server &other)
-	: _fd(other._fd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
+	: _servfd(other._servfd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
 {}
 
 Server& Server::getInstance(int fd, std::string password) 
@@ -30,7 +30,12 @@ Server& Server::getInstance(int fd, std::string password)
 
 Server::~Server()
 {
-	logScript(LOG_END(toString(_fd)));
+	for (int i = 0; i < 1024; i++)
+	{
+		if (_pollfds[i])
+			close (_pollfds[i]);
+	}
+	logScript(LOG_END(toString(_servfd)));
 }
 
 void Server::rmClient(int fd)
@@ -93,8 +98,6 @@ bool                       		Server::checkPass(const std::string pass)	const  	{
 
 
 
-
-
 /* ------------------------------------< work in progres >------------------------------------ */
 
 void Server::acceptClient()
@@ -124,3 +127,165 @@ void	Server::putMsg(const Channel& target, const std::string& msg) const
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
 		std::cout << "[" << toString(*it) + "] " + msg << std::endl;
 }
+
+//constructor/destructor
+void	Server::setup(void)
+{
+	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_servfd == -1)
+	{
+		std::cout << "socket()";
+		throw Server::SetupErrorException();
+	}
+	//if (setsockopt(SO_REUSEADDR));??
+	//int endian = 1;
+	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
+	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
+	{
+		std::cout << "fcntl()";
+		throw Server::SetupErrorException();
+	}
+
+	//vv set values in the sockaddr struct vv
+	_servaddr.sin_family = AF_INET;
+	_servaddr.sin_port = htons(_port);
+	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
+
+	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
+	{
+		std::cout << "bind()";
+		throw Server::SetupErrorException();
+	}
+	if (listen(_servfd, 10))
+	{
+		std::cout << "listen()";
+		throw Server::SetupErrorException();
+	}
+	for(int i = 0; i < 1023; i++)
+	{
+		if(!_pollfds[i].fd)
+		{
+			_pollfds[i].fd = _servfd;
+			_pollfds[i].events = POLLIN;
+			_pollfds[i].revents = 0;
+			break;
+		}
+	}
+	memset(&_pollfds, 0, sizeof(_pollfds));
+	_pollfds[0].fd = _servfd;
+}
+
+//getters/setters
+const int	&Server::getPort(void)const
+{
+	return (_port);
+}
+
+struct pollfd		*Server::getPollfds(void)
+{
+	return (_pollfds);
+}
+
+struct pollfd		Server::getPollfds(int  i)
+{
+	return (_pollfds[i]);
+}
+
+
+const std::string	&Server::getPassword(void)const
+{
+	return (_password);
+}
+
+void	Server::setPort(const int &port)
+{
+	_port = port;
+}
+
+void	Server::setPassword(const std::string &password)
+{
+	_password = password;
+}
+
+int	Server::getServFd(void)const
+{
+	return (_servfd);
+}
+
+//exceptions
+const char	*Server::SetupErrorException::what()const throw()
+{
+	return (" error happened during server setup.");
+}
+
+//member functions
+int	Server::acceptClient(void)
+{
+	Client		newclient;
+	int			clientfd;
+	socklen_t	addrsize;
+	struct sockaddr_in	clientip;
+
+	addrsize = sizeof(clientip);
+	clientfd = accept(_servfd, (struct sockaddr *)&clientip, &addrsize);
+	if (clientfd == -1)
+	{
+		std::cout << "client connection failed" << std::endl;
+		perror("client");
+		return (-1);
+	}
+	if (fcntl(clientfd, F_SETFL ,O_NONBLOCK))
+	{
+		std::cout << "client connection failed" << std::endl;
+		perror("client");
+		return (-1);
+	}
+	newclient.setFd(clientfd);
+	newclient.setIp(inet_ntoa(clientip.sin_addr));
+	_mapClientsFd.insert(std::make_pair(clientfd, newclient));
+	//add clientfd in the pollfd arr.
+	for(int i = 0; i < 1023; i++)
+	{
+		if(!_pollfds[i].fd)
+		{
+			_pollfds[i].fd = clientfd;
+			_pollfds[i].events = POLLIN;
+			_pollfds[i].revents = 0;
+			break;
+		}
+	}
+	std::cout << "fd " << clientfd << " opened for client" << std::endl;
+	logScript(LOG_ACCEPTCLIENT(toString(_servfd), toString(clientfd)));
+	return (clientfd);
+}
+
+void	Server::removeClient(Client	&client)
+{
+	_mapClientsFd.erase(client.getFd());
+	_mapClientsNick.erase(client.getNick());
+
+	int	clientfd = client.getFd();
+	for(int i = 0; i > 1023; i++)
+	{
+		if(_pollfds[i].fd == clientfd)
+		{
+			_pollfds[i].fd = 0;
+			close(clientfd);
+			//client.~Client();??
+			return;
+		}
+	}
+}
+
+void	Server::recieveData(int fd)
+{
+	char		buff[1024];
+	std::string	msg;
+
+	//store message in a string.
+	while (recv(fd, buff, 1024, ))
+		msg += buff.c_str();
+
+	Command::handleCommand(_mapClientsFd[fd], msg);
+}
+>>>>>>> agamay_server

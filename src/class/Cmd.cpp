@@ -66,7 +66,6 @@ const std::string& Cmd::arg(size_t i) const
     return _args[i];
 }
 
-
 const std::string Cmd::argcs(size_t i) const
 {
 	std::string cs;

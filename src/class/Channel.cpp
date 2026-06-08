@@ -1,5 +1,3 @@
-
-
 #include "../_header/irc.hpp"
 
 Channel::Channel(const std::string& channel_name, const Client& op , const std::string& password)
@@ -67,11 +65,7 @@ int Channel::findInvite(int fd) const
     return -1;
 }
 
-
-
-
 bool Channel::emptyPassword() const { return _password.empty(); }
-
 
 bool Channel::checkPassword(std::string pass) const { return _password == pass; }
 
