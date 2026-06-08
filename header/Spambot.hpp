@@ -2,6 +2,9 @@
 # define SPAMBOT_HPP
 
 # include "irc.hpp"
+# include <chrono>
+# include <thread>
+# include <ctime>
 
 class Spambot
 {
@@ -19,7 +22,11 @@ class Spambot
 		}
 		void spam();
 		{
+			while(react == 0)
+			{
 
+				putmsg(fdServ, "PRIVATEMSG #channel :buy my robux");
+			}
 		}
 		typedef std::map<std::string, std::string> box;
 		void overreact(std::string msg);
