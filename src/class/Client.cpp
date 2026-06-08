@@ -1,11 +1,11 @@
 #include "../_header/irc.hpp"
 
-Client::Client(int fd)
-    : _fd(fd), _authenticated(0)
+Client::Client(int fd, std::string ip)
+    : _fd(fd), _ip(ip), _authenticated(0)
 {}
 
 Client::Client(const Client &other)
-    : _fd(other._fd), _userName(other._userName), _nickName(other._nickName), _authenticated(0)
+    : _fd(other._fd), _ip(other._ip) , _userName(other._userName), _nickName(other._nickName), _authenticated(0)
 {}
 
 // Client& Client::operator=(const Client &other)

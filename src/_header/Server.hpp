@@ -22,9 +22,8 @@ class Server
 		mapClient_s_t::const_iterator	endClientNick	()												const;
 		mapChannel_t::const_iterator	endChannel		()												const;
 
-		void 							acceptClient	(void);
-		void 							rmClient		(const int fd);
-		void 							rmClient		(const std::string str);
+		int								acceptClient	(void);
+		void 							rmClient		(Client &client);
 		void							recieveData		(int fd);
 			
 		void							addClient		(const int fd, Client user);
@@ -34,8 +33,8 @@ class Server
 		//getters/setters
 		const int						&getPort		(void)const;
 		const std::string				&getPassword	(void)const;
-		const std::map<int, Client>			&getMapClientsFd(void)const{return (_mapClientsFd);}
-		const std::map<std::string, Client>	&getMapClientsNick(void)const{return (_mapClientsNick);}
+		const std::map<int, Client>			&getMapClientsFd(void)const{return (_clientsFd);}
+		const std::map<std::string, Client>	&getMapClientsNick(void)const{return (_clientsNick);}
 		struct pollfd					*getPollfds		(void);
 		struct pollfd					getPollfds		(int i);
 		int								getServFd		(void)const;
@@ -61,7 +60,6 @@ class Server
 	private:
 		int							_servfd;
 		struct pollfd				_pollfds[1024];
-		int 						_port;//double. might be useful.
 		struct sockaddr_in			_servaddr;
 		const std::string			_password;
 		mapClient_i_t				_clientsFd;

@@ -98,7 +98,7 @@ void Command::fNick(Client& user, Cmd& cmd)
 	if (serv.checkClient(cmd.arg(0)))
 		return serv.putMsg(user, ERR_NICKNAMEINUSE(user.getNickName(), cmd.arg(0)));
 	if (serv.checkClient(user.getNickName()))
-		serv.rmClient(user.getNickName());
+		serv.rmClient(user);
 	user.setNickName(cmd.arg(0));
 	serv.addClient(cmd.arg(0), user);
 }
@@ -134,7 +134,7 @@ void Command::fQuit(Client& user, Cmd& cmd)
 
 	user.clearChannel();
     Server& serv = Server::getInstance();
-	serv.rmClient(user.getFd());
+	serv.rmClient(user);
 }
 
 

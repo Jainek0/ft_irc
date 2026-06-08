@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 #include "../_header/irc.hpp"
 
 Server::Server(int fd, std::string password)
@@ -32,22 +30,10 @@ Server::~Server()
 {
 	for (int i = 0; i < 1024; i++)
 	{
-		if (_pollfds[i])
-			close (_pollfds[i]);
+		if (_pollfds[i].fd)
+			close(_pollfds[i].fd);
 	}
 	logScript(LOG_END(toString(_servfd)));
-}
-
-void Server::rmClient(int fd)
-{
-	_clientsNick.erase(_clientsFd.find(fd)->second.getNickName());
-	_clientsFd.erase(fd);
-}
-
-void Server::rmClient(const std::string Name)
-{
-	_clientsFd.erase(_clientsNick.find(Name)->second.getFd());
-	_clientsNick.erase(Name);
 }
 
 void Server::addClient(const int fd, Client user)
@@ -100,20 +86,6 @@ bool                       		Server::checkPass(const std::string pass)	const  	{
 
 /* ------------------------------------< work in progres >------------------------------------ */
 
-void Server::acceptClient()
-{
-	Client tmp(4242);
-
-
-	tmp.setNickName("le_bg");
-	tmp.setUserName("kilian");
-	tmp.setAuthenti();
-
-	_clientsFd.insert(std::make_pair(4242, tmp));
-	_clientsNick.insert(std::make_pair(tmp.getNickName(), tmp));
-	logScript(LOG_ACCEPTCLIENT(toString(3232), toString(4242)));
-}
-
 /*      a changer pour envoiler les msg a target et pas le print comme actuellement     */
 void	Server::putMsg(const Client& target, const std::string& msg)	const
 {
@@ -134,7 +106,7 @@ void	Server::setup(void)
 	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_servfd == -1)
 	{
-		std::cout << "socket()";
+		std::cerr << "socket()";
 		throw Server::SetupErrorException();
 	}
 	//if (setsockopt(SO_REUSEADDR));??
@@ -142,23 +114,23 @@ void	Server::setup(void)
 	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
 	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
 	{
-		std::cout << "fcntl()";
+		std::cerr << "fcntl()";
 		throw Server::SetupErrorException();
 	}
 
 	//vv set values in the sockaddr struct vv
 	_servaddr.sin_family = AF_INET;
-	_servaddr.sin_port = htons(_port);
+	_servaddr.sin_port = htons(_servfd);
 	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
 
 	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
 	{
-		std::cout << "bind()";
+		std::cerr << "bind()";
 		throw Server::SetupErrorException();
 	}
 	if (listen(_servfd, 10))
 	{
-		std::cout << "listen()";
+		std::cerr << "listen()";
 		throw Server::SetupErrorException();
 	}
 	for(int i = 0; i < 1023; i++)
@@ -178,7 +150,7 @@ void	Server::setup(void)
 //getters/setters
 const int	&Server::getPort(void)const
 {
-	return (_port);
+	return (_servfd);
 }
 
 struct pollfd		*Server::getPollfds(void)
@@ -197,16 +169,6 @@ const std::string	&Server::getPassword(void)const
 	return (_password);
 }
 
-void	Server::setPort(const int &port)
-{
-	_port = port;
-}
-
-void	Server::setPassword(const std::string &password)
-{
-	_password = password;
-}
-
 int	Server::getServFd(void)const
 {
 	return (_servfd);
@@ -221,11 +183,10 @@ const char	*Server::SetupErrorException::what()const throw()
 //member functions
 int	Server::acceptClient(void)
 {
-	Client		newclient;
 	int			clientfd;
 	socklen_t	addrsize;
 	struct sockaddr_in	clientip;
-
+	
 	addrsize = sizeof(clientip);
 	clientfd = accept(_servfd, (struct sockaddr *)&clientip, &addrsize);
 	if (clientfd == -1)
@@ -240,9 +201,8 @@ int	Server::acceptClient(void)
 		perror("client");
 		return (-1);
 	}
-	newclient.setFd(clientfd);
-	newclient.setIp(inet_ntoa(clientip.sin_addr));
-	_mapClientsFd.insert(std::make_pair(clientfd, newclient));
+	Client	newclient(clientfd, inet_ntoa(clientip.sin_addr));
+	_clientsFd.insert(std::make_pair(clientfd, newclient));
 	//add clientfd in the pollfd arr.
 	for(int i = 0; i < 1023; i++)
 	{
@@ -259,10 +219,10 @@ int	Server::acceptClient(void)
 	return (clientfd);
 }
 
-void	Server::removeClient(Client	&client)
+void	Server::rmClient(Client	&client)
 {
-	_mapClientsFd.erase(client.getFd());
-	_mapClientsNick.erase(client.getNick());
+	_clientsFd.erase(client.getFd());
+	_clientsNick.erase(client.getNickName());
 
 	int	clientfd = client.getFd();
 	for(int i = 0; i > 1023; i++)
@@ -279,13 +239,13 @@ void	Server::removeClient(Client	&client)
 
 void	Server::recieveData(int fd)
 {
-	char		buff[1024];
+	char		buff[1025];
 	std::string	msg;
 
+	buff[1024] = '\0';
 	//store message in a string.
-	while (recv(fd, buff, 1024, ))
-		msg += buff.c_str();
+	while (recv(fd, buff, 1024, 0))
+		msg += buff;
 
-	Command::handleCommand(_mapClientsFd[fd], msg);
+	Command::handleCommand((_clientsFd.find(fd))->second, msg);
 }
->>>>>>> agamay_server

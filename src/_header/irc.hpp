@@ -23,6 +23,7 @@
 # include <unistd.h>//close
 # include <poll.h>//poll
 # include <csignal>//signal
+# include <fcntl.h>//fcntl
 
 /*  ----------------------- {FORWARD DECL} -----------------------  */
 
