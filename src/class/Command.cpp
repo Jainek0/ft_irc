@@ -35,6 +35,7 @@ void Command::handleCommand(Client& user, std::string str)
 			return fNick(user, cmd);
 		if (cmd.command() == "PASS")
 			return fPass(user, cmd);
+		serv.putMsg(user, "0 :plz use PASS <password>");
 	}
 	
 	mapCommand_t::iterator itCmd(commands.find(cmd.command()));
