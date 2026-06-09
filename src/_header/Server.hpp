@@ -48,7 +48,7 @@ class Server
 		mapChannel_t::iterator			beginChannel	();
 
 
-		static Server& 					getInstance		(int fd = -1, std::string password = "");
+		static Server& 					getInstance		(int port = -1, std::string password = "");
 		
 
 		class	SetupErrorException : public std::exception
@@ -58,6 +58,7 @@ class Server
 		};
 
 	private:
+		int							_port;
 		int							_servfd;
 		struct pollfd				_pollfds[1024];
 		struct sockaddr_in			_servaddr;
@@ -70,7 +71,7 @@ class Server
 
 		Server& operator=(const Server &other);
 
-		Server(int fd, std::string password);
+		Server(int port, std::string password);
 		Server(const Server &other);
 
 };

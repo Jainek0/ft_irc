@@ -1,18 +1,18 @@
 #include "../_header/irc.hpp"
 
-Server::Server(int fd, std::string password)
-	: _servfd(fd), _password(password) 
+Server::Server(int port, std::string password)
+	: _port(port), _password(password) 
 {
-	logScript( LOG_START(toString(fd)));
+	logScript( LOG_START(toString(port)));
 }
 
 Server::Server(const Server &other)
-	: _servfd(other._servfd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
+	: _port(other._port), _servfd(other._servfd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
 {}
 
-Server& Server::getInstance(int fd, std::string password) 
+Server& Server::getInstance(int port, std::string password) 
 {
-	static Server server(fd, password);
+	static Server server(port, password);
 	return server;
 }
 
@@ -89,6 +89,8 @@ bool                       		Server::checkPass(const std::string pass)	const  	{
 /*      a changer pour envoiler les msg a target et pas le print comme actuellement     */
 void	Server::putMsg(const Client& target, const std::string& msg)	const
 {
+	send(target.getFd(), msg.c_str(), msg.size(), 0);
+
 	std::cout << "[" << target.getNickName() + "] " + msg << std::endl;
 }
 
@@ -97,7 +99,7 @@ void	Server::putMsg(const Channel& target, const std::string& msg) const
 	target.log();
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
-		std::cout << "[" << toString(*it) + "] " + msg << std::endl;
+		send(*it, msg.c_str(), msg.size(), 0);
 }
 
 //constructor/destructor
@@ -120,7 +122,7 @@ void	Server::setup(void)
 
 	//vv set values in the sockaddr struct vv
 	_servaddr.sin_family = AF_INET;
-	_servaddr.sin_port = htons(_servfd);
+	_servaddr.sin_port = htons(_port);
 	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
 
 	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
@@ -133,24 +135,16 @@ void	Server::setup(void)
 		std::cerr << "listen()";
 		throw Server::SetupErrorException();
 	}
-	for(int i = 0; i < 1023; i++)
-	{
-		if(!_pollfds[i].fd)
-		{
-			_pollfds[i].fd = _servfd;
-			_pollfds[i].events = POLLIN;
-			_pollfds[i].revents = 0;
-			break;
-		}
-	}
 	memset(&_pollfds, 0, sizeof(_pollfds));
 	_pollfds[0].fd = _servfd;
+	_pollfds[0].events = POLLIN;
+	_pollfds[0].revents = 0;
 }
 
 //getters/setters
 const int	&Server::getPort(void)const
 {
-	return (_servfd);
+	return (_port);
 }
 
 struct pollfd		*Server::getPollfds(void)
@@ -231,7 +225,6 @@ void	Server::rmClient(Client	&client)
 		{
 			_pollfds[i].fd = 0;
 			close(clientfd);
-			//client.~Client();??
 			return;
 		}
 	}
@@ -239,13 +232,17 @@ void	Server::rmClient(Client	&client)
 
 void	Server::recieveData(int fd)
 {
-	char		buff[1025];
+	char		buff[1024];
 	std::string	msg;
 
-	buff[1024] = '\0';
 	//store message in a string.
-	while (recv(fd, buff, 1024, 0))
+	memset(buff, 0, 1024);
+	while (!strstr(buff, "\n"))
+	{
+		recv(fd, buff, 1024, 0);
 		msg += buff;
+	}
 
+	std::cout << "----------------recieve data------------" << std::endl;
 	Command::handleCommand((_clientsFd.find(fd))->second, msg);
 }

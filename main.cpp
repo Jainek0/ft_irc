@@ -43,7 +43,7 @@ int	main(int argc, char **argv)
 			//close all fds
 			return(1);
 		}
-		for(int i = 0; i < 1023; i++)
+		for(int i = 0; i < 1024; i++)
 		{
 			if ((myserver.getPollfds(i)).revents == POLLIN)//&POLLIN?
 			{
