@@ -5,53 +5,43 @@
 # include <chrono>
 # include <thread>
 # include <ctime>
+# include <iostream>
+# include <istream>
+# include <signal.h>
+
+typedef std::map<std::string, std::string> box;
 
 class Spambot
 {
 	public:
 		//constructor/destructor
-		Spambot();
+		Spambot(int port, std::string nick, std::string pass);
 		Spambot(Spambot &other);
 		Spambot& operator=(Spambot &other);
 		~Spambot();
 
+
+
+		void vigil();
+
 		void joinChannel(std::string channel);
-		{
-			putmsg(fdServ, "JOIN #channel");
-			putmsg(fdServ, "PRIVATEMSG #channel :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
-		}
+
 		void spam();
-		{
-			while(react == 0)
-			{
 
-				putmsg(fdServ, "PRIVATEMSG #channel :buy my robux");
-			}
-		}
-		typedef std::map<std::string, std::string> box;
-		void overreact(std::string msg);
-		{
-			std::map<std::string, std::string> shout;
-			shout.insert("pile", "macron explosion face");
-			shout.insert("face", "macron decapitation pile");
-			std::ostringstream os(msg);
-			for (std::string str << os; str; str << os)
-			{
-				box::iterator it shout.find(str);
-				if (it != shout.end()) {
-					putmsg(it->second);
+		void overreact();
 
-				}
-			}
-		}
-		
 		//getters/setters
-		const std::string	&getNickname(void)const {return(_nick);}
-		void				setNickname(std::string nick) {_nick = nick;}
-		
+		// const std::string	&getNickname(void)const {return(_nick);}
+		// void				setNickname(std::string nick) {_nick = nick;}
+
 	private:
-		int 			_fd;
-		std::string 	_nick;
+		void					sa_sig(int sig, siginfo_t info, void *context);
+		int 					_port;
+		std::set<std::string>	_channels;
+		std::string				_msg;
+
+		bool					_signal;
+
 };
 
 #endif
