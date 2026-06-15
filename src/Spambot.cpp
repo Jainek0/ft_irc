@@ -17,6 +17,7 @@ Spambot::Spambot(int _port, std::string nick, std::string pass) : _signal(1), _p
 	putmsg(_port, "NICK " + nick);
 	// check nick error
 	putmsg(_port, "USER bot");
+	vigil();
 }
 
 void	Spambot::vigil()
@@ -33,14 +34,14 @@ void	Spambot::vigil()
 		_msg += buffer;
 		if (_msg.find('\n'))
 		{
-			overreact();
+			overreact(_msg);
 			_msg.clear();
 		}
 		if(datetime.tm_min != timethen)
 		{
 			timethen = datetime.tm_min;
-			spam();
-			putmsg(_port, "PRIVATEMSG #channel :spamming in progress");
+			spam(datetime.tm_sec);
+			//putmsg(_port, "PRIVATEMSG #channel :spamming in progress");
 		}	
 	}
 }
@@ -51,22 +52,40 @@ void Spambot::joinChannel(std::string channel)
 	putmsg(_port, "PRIVATEMSG #channel :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
 }
 
-void Spambot::spam()
+void Spambot::spam(int time)
 {
 	if(!_channels.size()>0)
 		return ;
-	// message randomizer
-	putmsg(_port, "PRIVATEMSG #channel :buy my robux");
+	if (time > 0 && time < 7)
+		putmsg(_port, "PRIVATEMSG #channel :free robux");
+	else if (time > 6 && time < 13)
+		putmsg(_port, "PRIVATEMSG #channel :click to get money");
+	else if (time > 12 && time < 19)
+		putmsg(_port, "PRIVATEMSG #channel :your computter require an update");
+	else if (time > 18 && time < 25)
+		putmsg(_port, "PRIVATEMSG #channel :turning on your camera");
+	else if (time > 24 && time < 31)
+		putmsg(_port, "PRIVATEMSG #channel :you have been hacked");
+	else if (time > 30 && time < 37)
+		putmsg(_port, "PRIVATEMSG #channel :your mama");
+	else if (time > 36 && time < 43)
+		putmsg(_port, "PRIVATEMSG #channel :how to lose fat easily, doctor hate this");
+	else if (time > 42 && time < 49)
+		putmsg(_port, "PRIVATEMSG #channel :babes in your area");
+	else if (time > 48 && time < 55)
+		putmsg(_port, "PRIVATEMSG #channel :try this new mobile game");
+	else if (time > 54 && time < 61)
+		putmsg(_port, "PRIVATEMSG #channel :nobody loves you");
 }
 
-void Spambot::overreact()
+void Spambot::overreact(std::string msg)
 {
 	if(!_channels.size()>0)
 		return ;
 	
 	std::map<std::string, std::string> shout;
 	shout.insert("pile", "macron explosion face");
-	shout.insert("face", "macron decapitation pile");
+	shout.insert("face", "macron dec		std::set<std::string>	_channels;apitation pile");
 	std::ostringstream os(_msg);
 	for (std::string str << os; str; str << os)
 	{

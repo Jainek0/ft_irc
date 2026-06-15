@@ -26,9 +26,9 @@ class Spambot
 
 		void joinChannel(std::string channel);
 
-		void spam();
+		void spam(int time);
 
-		void overreact();
+		void overreact(std::string msg);
 
 		//getters/setters
 		// const std::string	&getNickname(void)const {return(_nick);}
