@@ -215,6 +215,8 @@ int	Server::acceptClient(void)
 
 void	Server::rmClient(Client	&client)
 {
+	std::cout << "client " << client.getNickName() << " disconnected" << std::endl;
+
 	_clientsFd.erase(client.getFd());
 	_clientsNick.erase(client.getNickName());
 
@@ -239,10 +241,9 @@ void	Server::recieveData(int fd)
 	memset(buff, 0, 1024);
 	while (!strstr(buff, "\n"))
 	{
-		recv(fd, buff, 1024, 0);
+		if (!recv(fd, buff, 1024, 0))
+			rmClient(_clientsFd.at(fd));
 		msg += buff;
 	}
-
-	std::cout << "----------------recieve data------------" << std::endl;
 	Command::handleCommand((_clientsFd.find(fd))->second, msg);
 }

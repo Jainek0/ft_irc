@@ -21,14 +21,14 @@ int	init(Server &myserver)//, struct sigaction &signal)
 int	main(int argc, char **argv)
 {
 	//is it necessary to while(isdigit) input?
-	int port = atoi(argv[1]);
-	if (argc != 3 || !(port > 1023 && port < 65535))
+	if (argc != 3 || !(atoi(argv[1]) > 1023 && atoi(argv[1]) < 65535))
 	{
 		std::cout << "please format input as :" << std::endl;
 		std::cout << "./ircserv Port<int>(1024-65535) Password<string>" << std::endl;
 		return 0;
 	}
-
+	
+	int port = atoi(argv[1]);
 	Server &myserver = Server::getInstance(port, argv[2]);
 	// struct sigaction	signal;
 	// memset(&signal, 0, sizeof(signal));

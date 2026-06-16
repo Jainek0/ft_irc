@@ -1,11 +1,11 @@
 #include "../_header/irc.hpp"
 
 Client::Client(int fd, std::string ip)
-    : _fd(fd), _ip(ip), _authenticated(0)
+	: _fd(fd), _ip(ip), _authenticated(0)
 {}
 
 Client::Client(const Client &other)
-    : _fd(other._fd), _ip(other._ip) , _userName(other._userName), _nickName(other._nickName), _authenticated(0)
+	: _fd(other._fd), _ip(other._ip) , _userName(other._userName), _nickName(other._nickName), _authenticated(0)
 {}
 
 // Client& Client::operator=(const Client &other)
@@ -19,16 +19,16 @@ Client::Client(const Client &other)
 
 void Client::clearChannel()
 {
-    Server& serv = Server::getInstance();
+	Server& serv = Server::getInstance();
 
-    for (std::set<std::string>::iterator it = _channels.begin(); it != _channels.end(); ++it)
-    {
-        if (serv.findChannel(*it) != serv.endChannel())
-        {
-            serv.findChannel(*it)->second.rmUser(_fd);
-            serv.findChannel(*it)->second.rmInvite(_fd);
-        }
-    }
+	for (std::set<std::string>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+	{
+		if (serv.findChannel(*it) != serv.endChannel())
+		{
+			serv.findChannel(*it)->second.rmUser(_fd);
+			serv.findChannel(*it)->second.rmInvite(_fd);
+		}
+	}
 }
 
 Client::~Client()
