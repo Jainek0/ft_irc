@@ -87,19 +87,21 @@ bool                       		Server::checkPass(const std::string pass)	const  	{
 /* ------------------------------------< work in progres >------------------------------------ */
 
 /*      a changer pour envoiler les msg a target et pas le print comme actuellement     */
-void	Server::putMsg(const Client& target, const std::string& msg)	const
+void	Server::putMsg(const Client& target, const std::string& msg)
 {
-	send(target.getFd(), msg.c_str(), msg.size(), 0);
-
-	std::cout << "[" << target.getNickName() + "] " + msg << std::endl;
+	std::string output(msg + "\r\n");
+	if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
+			rmClient(_clientsFd.at(target.getFd()));
 }
 
-void	Server::putMsg(const Channel& target, const std::string& msg) const
+void	Server::putMsg(const Channel& target, const std::string& msg)
 {
 	target.log();
+	std::string output(msg + "\r\n");
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
-		send(*it, msg.c_str(), msg.size(), 0);
+		if (send(*it, output.c_str(), output.size(), 0) < 0)
+			rmClient(_clientsFd.at(*it));
 }
 
 //constructor/destructor
@@ -217,11 +219,11 @@ void	Server::rmClient(Client	&client)
 {
 	std::cout << "client " << client.getNickName() << " disconnected" << std::endl;
 
-	_clientsFd.erase(client.getFd());
-	_clientsNick.erase(client.getNickName());
-
 	int	clientfd = client.getFd();
-	for(int i = 0; i > 1023; i++)
+	if (_clientsNick.find(client.getNickName()) != _clientsNick.end())
+		_clientsNick.erase(client.getNickName());
+	_clientsFd.erase(clientfd);
+	for(int i = 0; i < 1023; i++)
 	{
 		if(_pollfds[i].fd == clientfd)
 		{
@@ -234,16 +236,20 @@ void	Server::rmClient(Client	&client)
 
 void	Server::recieveData(int fd)
 {
-	char		buff[1024];
-	std::string	msg;
+	char		buff[100];
 
 	//store message in a string.
-	memset(buff, 0, 1024);
-	while (!strstr(buff, "\n"))
+	memset(buff, 0, 100);
+	std::string	msg;
+	while (msg.find("\r\n") == std::string::npos)
 	{
-		if (!recv(fd, buff, 1024, 0))
-			rmClient(_clientsFd.at(fd));
-		msg += buff;
+		int bytes = recv(fd, buff, 100, 0);
+		if (bytes == 0)
+			return rmClient(_clientsFd.at(fd));
+		if (bytes < 0)
+			return ;
+		std::cout << "buff<" << buff << "> " << bytes << std::endl;
+		msg.append(buff, bytes);
 	}
 	Command::handleCommand((_clientsFd.find(fd))->second, msg);
 }

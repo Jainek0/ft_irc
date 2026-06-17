@@ -10,10 +10,9 @@ class Server
 		~Server();
 		void							setup			(void);
 
-		void							putMsg			(const Client& target, const std::string& msg)	const;
-		void							putMsg			(const Channel& target,const std::string& msg)	const;
+		void							putMsg			(const Client& target, const std::string& msg);
+		void							putMsg			(const Channel& target,const std::string& msg);
 
-		
 		bool 							checkPass		(const std::string pass) 						const;
 		bool 							checkClient		(const std::string nick) 						const;
 		bool 							checkClient		(const int fd) 									const;

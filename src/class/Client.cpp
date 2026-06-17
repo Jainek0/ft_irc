@@ -43,9 +43,9 @@ const std::string Client::getPrefix() const { return (":" + _nickName + "@" + _u
 
 int Client::getFd() const { return _fd; }
 
-bool Client::getAuthenti() const { return _authenticated; }
+int Client::getAuthenti() const { return _authenticated; }
 
-void Client::setAuthenti() { _authenticated = 1; }
+void Client::setAuthenti(int mod) { _authenticated = mod; }
 
 void Client::setNickName(const std::string nickName) { _nickName = nickName; }
 

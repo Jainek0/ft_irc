@@ -18,33 +18,60 @@ mapCommand_t Command::createCommands()
     return commands;
 }
 
-void Command::handleCommand(Client& user, std::string str)
+
+
+void Command::handleCommand(Client& user, std::string input)
 {
     static mapCommand_t commands = createCommands();
     Server& serv = Server::getInstance();
+	std::string line;
+	size_t pos;
     
-	Cmd cmd(str);
-	
-	if (!user.getAuthenti())
+	while ((pos = input.find("\r\n")) != std::string::npos)
 	{
-		if (cmd.command() == "USER")
-			return fUser(user, cmd);
-		if (cmd.command() == "NICK")
-			return fNick(user, cmd);
-		if (cmd.command() == "PASS")
-			return fPass(user, cmd);
-		serv.putMsg(user, "0 :plz use PASS <password>");
-	}
-	
-	mapCommand_t::iterator itCmd(commands.find(cmd.command()));
+		line = input.substr(0, pos);
+		Cmd cmd(line);
+		input.erase(0, pos + 2);
+		
+		if (!(user.getAuthenti() == 2))
+		{
+			if (cmd.command() == "USER")
+				fUser(user, cmd);
+			else if (cmd.command() == "NICK")
+				fNick(user, cmd);
+			else if (cmd.command() == "PASS")
+				fPass(user, cmd);
+			else
+				serv.putMsg(user, "error no authenti");
+		}
+		else 
+		{
+			mapCommand_t::iterator itCmd(commands.find(cmd.command()));
 
-    if (itCmd != commands.end())
-        (itCmd->second)(user, cmd);
-    else
-        serv.putMsg(user, ERR_UNKNOWNCOMMAND(user.getNickName(), cmd.command()));
+			if (itCmd != commands.end())
+				(itCmd->second)(user, cmd);
+			else
+				serv.putMsg(user, ERR_UNKNOWNCOMMAND(user.getNickName(), cmd.command()));
+		}
+		line.clear();
+	}
 }
 
 /* ------------------------------------< commands >------------------------------------ */
+
+
+void checkAuthenti(Client& user, Server& serv)
+{
+	(void) serv;
+	if (user.getNickName().empty())
+		return ;
+		// return serv.putMsg(user, "tmp :plz use NICK <nick name>");
+	if (user.getUserName().empty())
+		return ;
+		// return serv.putMsg(user, "tmp :plz use USER <user name>");
+
+	user.setAuthenti(1);
+}
 
 void Command::fPass(Client& user, Cmd& cmd)
 {
@@ -53,15 +80,13 @@ void Command::fPass(Client& user, Cmd& cmd)
 	if (cmd.arg(0).empty())
 		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 	
-	if (user.getNickName().empty())
-		return serv.putMsg(user, "0 :plz use NICK <nick name>");
-	if (user.getUserName().empty())
-		return serv.putMsg(user, "0 :plz use USER <user name>");
-
 	if (!serv.checkPass(cmd.arg(0)))
 		return serv.putMsg(user, ERR_PASSWDMISMATCH(user.getNickName()));
 
-	user.setAuthenti();
+	if (user.getAuthenti() > 0)
+		user.setAuthenti(2);
+	else
+		checkAuthenti(user, serv);
 }
 
 bool checkName(std::string name)
@@ -101,6 +126,8 @@ void Command::fNick(Client& user, Cmd& cmd)
 		serv.rmClient(user);
 	user.setNickName(cmd.arg(0));
 	serv.addClient(cmd.arg(0), user);
+
+	checkAuthenti(user, serv);
 }
 
 
@@ -110,14 +137,15 @@ void Command::fUser(Client& user, Cmd& cmd)
 
 	if (cmd.arg(0).empty())
 		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
-
-	
+	if (checkName(cmd.arg(0)))
+		return serv.putMsg(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
+	user.setUserName(cmd.arg(0));
+	checkAuthenti(user, serv);
 }
 
 
+
 /* ------------------------------------< commands >------------------------------------ */
-
-
 
 
 
