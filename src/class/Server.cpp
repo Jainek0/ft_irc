@@ -90,6 +90,7 @@ bool                       		Server::checkPass(const std::string pass)	const  	{
 void	Server::putMsg(const Client& target, const std::string& msg)
 {
 	std::string output(msg + "\r\n");
+	// std::string output(msg);
 	if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
 			rmClient(_clientsFd.at(target.getFd()));
 }
@@ -234,22 +235,24 @@ void	Server::rmClient(Client	&client)
 	}
 }
 
+#define SIZEBUFF 5
+
 void	Server::recieveData(int fd)
 {
-	char		buff[100];
+	char		buff[SIZEBUFF];
 
-	//store message in a string.
-	memset(buff, 0, 100);
-	std::string	msg;
-	while (msg.find("\r\n") == std::string::npos)
+	memset(buff, 0, SIZEBUFF);
+	static std::string	msg;
+	int bytes = recv(fd, buff, SIZEBUFF, 0);
+	if (bytes == 0)
+		return rmClient(_clientsFd.at(fd));
+	if (bytes < 0)
+		return ;
+	msg.append(buff, bytes);
+	size_t pos = msg.find("\r\n");
+	if (pos != std::string::npos)
 	{
-		int bytes = recv(fd, buff, 100, 0);
-		if (bytes == 0)
-			return rmClient(_clientsFd.at(fd));
-		if (bytes < 0)
-			return ;
-		std::cout << "buff<" << buff << "> " << bytes << std::endl;
-		msg.append(buff, bytes);
+		Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos + 2));
+		msg.erase(0, pos + 2);
 	}
-	Command::handleCommand((_clientsFd.find(fd))->second, msg);
 }

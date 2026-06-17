@@ -24,36 +24,28 @@ void Command::handleCommand(Client& user, std::string input)
 {
     static mapCommand_t commands = createCommands();
     Server& serv = Server::getInstance();
-	std::string line;
-	size_t pos;
-    
-	while ((pos = input.find("\r\n")) != std::string::npos)
-	{
-		line = input.substr(0, pos);
-		Cmd cmd(line);
-		input.erase(0, pos + 2);
-		
-		if (!(user.getAuthenti() == 2))
-		{
-			if (cmd.command() == "USER")
-				fUser(user, cmd);
-			else if (cmd.command() == "NICK")
-				fNick(user, cmd);
-			else if (cmd.command() == "PASS")
-				fPass(user, cmd);
-			else
-				serv.putMsg(user, "error no authenti");
-		}
-		else 
-		{
-			mapCommand_t::iterator itCmd(commands.find(cmd.command()));
 
-			if (itCmd != commands.end())
-				(itCmd->second)(user, cmd);
-			else
-				serv.putMsg(user, ERR_UNKNOWNCOMMAND(user.getNickName(), cmd.command()));
-		}
-		line.clear();
+	Cmd cmd(input);
+	
+	if (!(user.getAuthenti() == 2))
+	{
+		if (cmd.command() == "USER")
+			fUser(user, cmd);
+		else if (cmd.command() == "NICK")
+			fNick(user, cmd);
+		else if (cmd.command() == "PASS")
+			fPass(user, cmd);
+		else if (cmd.command() != "CAP" && cmd.command() != "0")
+			serv.putMsg(user, "error no authenti");
+	}
+	else 
+	{
+		mapCommand_t::iterator itCmd(commands.find(cmd.command()));
+
+		if (itCmd != commands.end())
+			(itCmd->second)(user, cmd);
+		else
+			serv.putMsg(user, ERR_UNKNOWNCOMMAND(user.getNickName(), cmd.command()));
 	}
 }
 
