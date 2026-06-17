@@ -1,14 +1,19 @@
 #ifndef SPAMBOT_HPP
 # define SPAMBOT_HPP
 
-# include "irc.hpp"
+//# include "irc.hpp"
 # include <chrono>
 # include <thread>
 # include <ctime>
 # include <iostream>
 # include <istream>
 # include <signal.h>
+# include <map>
+# include <set>
+# include <sys/socket.h>
+# include <cstring>
 
+# define SIZEBUFF 1024
 typedef std::map<std::string, std::string> box;
 
 class Spambot
@@ -24,6 +29,10 @@ class Spambot
 
 		void vigil();
 
+		void receiveData();
+
+		void bothandle(std::string msg);
+
 		void joinChannel(std::string channel);
 
 		void spam();
@@ -36,12 +45,11 @@ class Spambot
 
 	private:
 		void					sa_sig(int sig, siginfo_t info, void *context);
+		bool					_signal;
+
 		int 					_port;
 		std::set<std::string>	_channels;
 		std::string				_msg;
-
-		bool					_signal;
-
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "../header/Spambot.hpp"
+
 void	Spambot::sa_sig(int sig, siginfo_t info, void *context)
 {
 	_signal = 0;
@@ -20,6 +21,48 @@ Spambot::Spambot(int _port, std::string nick, std::string pass) : _signal(1), _p
 	vigil();
 }
 
+void	Spambot::receiveData()
+{
+	char		buff[SIZEBUFF];
+
+	memset(buff, 0, SIZEBUFF);
+	static std::string	msg;
+	int bytes = recv(_port, buff, SIZEBUFF, 0);
+	if (bytes == 0)
+		return ;
+	msg.append(buff, bytes);
+	size_t pos = msg.find("\r\n");
+	if (pos != std::string::npos)
+	{
+		bothandle(msg.substr(0, pos));
+		msg.erase(0, pos + 2);
+	}
+}
+
+void	Spambot::bothandle(std::string msg)
+{
+	invite function "INVITE #<channel>"
+		-> joinChannel(<channel>);
+	if added to a channel	
+		->addChannel();
+	leave function
+		->botLeave
+	react function "PRIVATEMSG #<channel> :<message>"
+
+	check that i am not alone in the channel
+}
+
+void	Spambot::botreact()
+{
+
+}
+
+void	Spambot::botLeave()
+{
+	check that i have left a channel
+	substract the channel from the list
+}
+
 void	Spambot::vigil()
 {
 	time_t		timecheck;
@@ -30,7 +73,8 @@ void	Spambot::vigil()
 	while (_signal){
 		timecheck = time(NULL);
 		datetime = *localtime(&timecheck);
-		recv(socket, buffer, 1024, 0);
+		// recv(socket, buffer, 1024, 0);
+		receiveData();
 		_msg += buffer;
 		if (_msg.find('\n'))
 		{
@@ -46,13 +90,18 @@ void	Spambot::vigil()
 	}
 }
 
-void Spambot::joinChannel(std::string channel)
+void	Spambot::joinChannel(std::string channel)
 {
-	putmsg(_port, "JOIN #channel");
-	putmsg(_port, "PRIVATEMSG #channel :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
+	putmsg(_port, "JOIN #<channel>"); 
 }
 
-void Spambot::spam()
+void	Spambot::addChannel()
+{
+	putmsg(_port, "PRIVATEMSG #channel :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
+	add the channel to the list
+}
+
+void	Spambot::spam()
 {
 	if(!_channels.size()>0)
 		return ;
@@ -79,7 +128,7 @@ void Spambot::spam()
 		putmsg(_port, "PRIVATEMSG #channel :nobody loves you");
 }
 
-void Spambot::overreact(std::string msg)
+void	Spambot::overreact(std::string msg)
 {
 	if(!_channels.size()>0)
 		return ;
