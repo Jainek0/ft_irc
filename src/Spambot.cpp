@@ -40,7 +40,7 @@ void	Spambot::vigil()
 		if(datetime.tm_min != timethen)
 		{
 			timethen = datetime.tm_min;
-			spam(datetime.tm_sec);
+			spam();
 			//putmsg(_port, "PRIVATEMSG #channel :spamming in progress");
 		}	
 	}
@@ -52,29 +52,30 @@ void Spambot::joinChannel(std::string channel)
 	putmsg(_port, "PRIVATEMSG #channel :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
 }
 
-void Spambot::spam(int time)
+void Spambot::spam()
 {
 	if(!_channels.size()>0)
 		return ;
-	if (time > 0 && time < 7)
+	int seed = rand() % 10;
+	if (seed == 0)
 		putmsg(_port, "PRIVATEMSG #channel :free robux");
-	else if (time > 6 && time < 13)
+	else if (seed == 1)
 		putmsg(_port, "PRIVATEMSG #channel :click to get money");
-	else if (time > 12 && time < 19)
+	else if (seed == 2)
 		putmsg(_port, "PRIVATEMSG #channel :your computter require an update");
-	else if (time > 18 && time < 25)
+	else if (seed == 3)
 		putmsg(_port, "PRIVATEMSG #channel :turning on your camera");
-	else if (time > 24 && time < 31)
+	else if (seed == 4)
 		putmsg(_port, "PRIVATEMSG #channel :you have been hacked");
-	else if (time > 30 && time < 37)
+	else if (seed == 5)
 		putmsg(_port, "PRIVATEMSG #channel :your mama");
-	else if (time > 36 && time < 43)
+	else if (seed == 6)
 		putmsg(_port, "PRIVATEMSG #channel :how to lose fat easily, doctor hate this");
-	else if (time > 42 && time < 49)
+	else if (seed == 7)
 		putmsg(_port, "PRIVATEMSG #channel :babes in your area");
-	else if (time > 48 && time < 55)
+	else if (seed == 8)
 		putmsg(_port, "PRIVATEMSG #channel :try this new mobile game");
-	else if (time > 54 && time < 61)
+	else if (seed == 9)
 		putmsg(_port, "PRIVATEMSG #channel :nobody loves you");
 }
 

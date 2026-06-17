@@ -26,7 +26,7 @@ class Spambot
 
 		void joinChannel(std::string channel);
 
-		void spam(int time);
+		void spam();
 
 		void overreact(std::string msg);
 
