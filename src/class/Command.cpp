@@ -62,7 +62,8 @@ void checkAuthenti(Client& user, Server& serv)
 		return ;
 		// return serv.putMsg(user, "tmp :plz use USER <user name>");
 
-	user.setAuthenti(1);
+	if (user.getAuthenti() > 0)
+		user.setAuthenti(2);
 }
 
 void Command::fPass(Client& user, Cmd& cmd)
@@ -74,11 +75,8 @@ void Command::fPass(Client& user, Cmd& cmd)
 	
 	if (!serv.checkPass(cmd.arg(0)))
 		return serv.putMsg(user, ERR_PASSWDMISMATCH(user.getNickName()));
-
-	if (user.getAuthenti() > 0)
-		user.setAuthenti(2);
-	else
-		checkAuthenti(user, serv);
+	user.setAuthenti(1);
+	checkAuthenti(user, serv);
 }
 
 bool checkName(std::string name)
