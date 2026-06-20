@@ -15,8 +15,7 @@ class Command
 		static 	void			fKick			(Client& user, Cmd& cmd);
 		static 	void			fMode			(Client& user, Cmd& cmd);
 		static 	void			fTopic			(Client& user, Cmd& cmd);
-		static 	void			fPrivmsg			(Client& user, Cmd& cmd);
-		static 	void			fPing			(Client& user, Cmd& cmd);
+		static 	void			fPrivmsg		(Client& user, Cmd& cmd);
 		static 	void			fQuit			(Client& user, Cmd& cmd);
 		static 	void			fInvite			(Client& user, Cmd& cmd);
 

@@ -9,7 +9,6 @@ mapCommand_t Command::createCommands()
     commands["MODE"] = &Command::fMode;
     commands["TOPIC"] = &Command::fTopic;
 	commands["PRIVMSG"] = &Command::fPrivmsg;
-    commands["PING"] = &Command::fPing;
     commands["QUIT"] = &Command::fQuit;
     commands["INVITE"] = &Command::fInvite;
 	commands["USER"] = &Command::fUser;
@@ -17,8 +16,6 @@ mapCommand_t Command::createCommands()
 
     return commands;
 }
-
-
 
 void Command::handleCommand(Client& user, std::string input)
 {
@@ -56,11 +53,9 @@ void checkAuthenti(Client& user, Server& serv)
 {
 	(void) serv;
 	if (user.getNickName().empty())
-		return ;
-		// return serv.putMsg(user, "tmp :plz use NICK <nick name>");
+		return serv.putMsg(user, "tmp :plz use NICK <nick name>");
 	if (user.getUserName().empty())
-		return ;
-		// return serv.putMsg(user, "tmp :plz use USER <user name>");
+		return serv.putMsg(user, "tmp :plz use USER <user name>");
 
 	if (user.getAuthenti() > 0)
 		user.setAuthenti(2);
@@ -134,16 +129,8 @@ void Command::fUser(Client& user, Cmd& cmd)
 }
 
 
-
 /* ------------------------------------< commands >------------------------------------ */
 
-
-
-void Command::fPing(Client& user, Cmd& cmd)
-{
-    (void) user;
-    (void) cmd;
-}
 
 void Command::fQuit(Client& user, Cmd& cmd)
 {
@@ -155,11 +142,9 @@ void Command::fQuit(Client& user, Cmd& cmd)
 	serv.rmClient(user);
 }
 
-
-
 void Command::fPrivmsg(Client& user, Cmd& cmd)
 {
-    Server& serv = Server::getInstance();
+	Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty() || cmd.arg(1).empty())
 		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
@@ -221,7 +206,7 @@ void Command::fInvite(Client& user, Cmd& cmd)
 				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 
 			channel.addInvite(invited.getFd());
-			serv.putMsg(invited, user.getNickName() + " INVITE " + invited.getNickName() + ":#" + *itC);
+			serv.putMsg(invited, RPL_INVITERCVR(user.getPrefix(), invited.getNickName(), *itC));
 			++itC;
 		}
 		++itU;
@@ -300,6 +285,7 @@ void Command::fMode(Client& user, Cmd& cmd)
 			channel.grade(mode, client.getFd());
 			++i;
 		}
+		serv.putMsg(user, RPL_MODE(user.getPrefix(), channel.getName(), cmd.arg(1), user.getNickName()));
 		channel.setMode(*it, mode);
 	}
 	channel.log();
@@ -324,12 +310,13 @@ void Command::fTopic(Client& user, Cmd& cmd)
 	if (cmd.arg(1).empty())
 	{
 		if (channel.getTopic().empty())
-			return serv.putMsg(user, channel.getName() + " :No topic is set");
+			return serv.putMsg(channel, RPL_NOTOPIC(user.getNickName(), channel.getName()));
 		return serv.putMsg(user, channel.getName() + " :" + channel.getTopic());
 	}
 	if (channel.getMode('t') && channel.findOperator(user.getFd()) < 1)
 		return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 	channel.setTopic(cmd.argcs(1));
+	serv.putMsg(channel, RPL_TOPIC(user.getPrefix(), channel.getName(), cmd.argcs(1)));
 	logScript(LOG_TOPIC(toString(user.getFd()), user.getNickName(), channel.getName(), channel.getTopic()));
 }
 
@@ -367,7 +354,7 @@ void Command::fKick(Client& user, Cmd& cmd)
 				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 			if (channel.findUser(kicked.getFd()) <= 0)
 				return serv.putMsg(user, ERR_USERNOTINCHANNEL(*itU,*itC));
-			serv.putMsg(channel, user.getPrefix() + " KICK #" + channel.getName() + " " + reason );
+			serv.putMsg(channel, RPL_KICK(user.getPrefix(), channel.getName(), kicked.getNickName()));
 			channel.rmUser(kicked.getFd());
 			logScript(LOG_KCIK(toString(user.getFd()),user.getNickName(), kicked.getNickName(), channel.getName()));
             ++itU;
@@ -415,6 +402,7 @@ void Command::fJoin(Client& user, Cmd& cmd)
                     serv.addChannel(*itC, Channel(*itC, user, *(itP++)));
                 else
                     serv.addChannel(*itC, Channel(*itC, user));
+				serv.putMsg(user, RPL_JOIN(user.getPrefix(), *itC));
 				logScript(LOG_JOIN_OP(toString(user.getFd()), user.getNickName(), *itC));
                 (*serv.findChannel(*itC)).second.addOperator(user.getFd());
 				(*serv.findChannel(*itC)).second.log(); // --------------------------------------------------- tmp
@@ -427,62 +415,3 @@ void Command::fJoin(Client& user, Cmd& cmd)
 
 Command::~Command() {}
 Command::Command() {}
-
-//vvv aga nick(), usr(), pwd() vvv
-
-// void	Command::nickname(Client &user)
-// {
-// 	char	buffer[1000];//size?
-
-// 	send(user.getFd(), "nickname: \n", 11, SOCK_NONBLOCK);
-// 	recv(user.getFd(), buffer, sizeof(buffer), SOCK_NONBLOCK);//loop gnl?
-
-// 	std::map<int, Client>::iterator it;
-// 	it = ((Server::getInstance()).getMapClientsFd()).find(user.getFd());
-// 	it->second.setNickname(buffer);
-// 	if(user.getNickname() != "")
-// 	{
-// 		((Server::getInstance()).getMapClientsNick()).erase(user.getNickname());
-// 	}
-// 	((Server::getInstance()).getMapClientsNick()).insert({buffer, Client(user.getFd(), buffer, user.getUsername())});
-// 	user.setNickname(buffer);
-// }
-
-// void	Command::username(Client &user)
-// {
-// 	char	buffer[1000];//size?
-
-// 	send(user.getFd(), "username: \n", 11, SOCK_NONBLOCK);
-// 	recv(user.getFd(), buffer, sizeof(buffer), SOCK_NONBLOCK);//loop gnl?
-
-// 	std::map<int, Client>::iterator it;
-// 	it = ((Server::getInstance()).getMapClientsFd()).find(user.getFd());
-// 	it->second.setUsername(buffer);
-// 	if (user.getNickname() != "")
-// 	{
-// 		std::map<std::string, Client>::iterator it2;
-// 		it2 = ((Server::getInstance()).getMapClientsNick()).find(user.getNickname());
-// 		it2->second.setUsername(buffer);
-// 	}
-// 	user.setUsername(buffer);
-// }
-
-// void	Command::password(Client &user)
-// {
-// 	char	*buffer[1000];//size?
-
-// 	if (!user.getNickname() || !user.getUsername())
-// 	{
-// 		send(user.getFd(), "Please first enter a nickname and a username\n", 45, O_NONBLOCK);
-// 		return ;
-// 	}
-// 	else if (user.getAuthen() == TRUE)
-// 	{
-// 		send(user.getFd(), "Already logged in.\n", 19, O_NONBLOCK);
-// 		return ;
-// 	}
-// 	send(user.getFd(), "password: \n", 11, O_NONBLOCK);
-// 	recv(user.getFd(), buffer, buffsize, O_NONBLOCK);//loop gnl?
-// 	if(buffer == (Server::getInstance()).getPassword())//strcmp()? char*/string
-// 		user.setAuthen(TRUE);
-// }

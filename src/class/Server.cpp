@@ -237,7 +237,7 @@ void	Server::rmClient(Client	&client)
 
 #define SIZEBUFF 5
 
-void	Server::recieveData(int fd)
+void	Server::receiveData(int fd)
 {
 	char		buff[SIZEBUFF];
 
@@ -252,7 +252,7 @@ void	Server::recieveData(int fd)
 	size_t pos = msg.find("\r\n");
 	if (pos != std::string::npos)
 	{
-		Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos + 2));
+		Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos));
 		msg.erase(0, pos + 2);
 	}
 }

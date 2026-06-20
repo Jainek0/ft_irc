@@ -15,6 +15,7 @@ class Client
 		const std::string		getPrefix	() 			  const;
 		int						getFd		()			  const;
 		int						getAuthenti	()			  const;
+		
 
 		void					setNickName	(const std::string);
 		void					setUserName	(const std::string);

@@ -23,7 +23,7 @@ class Server
 
 		int								acceptClient	(void);
 		void 							rmClient		(Client &client);
-		void							recieveData		(int fd);
+		void							receiveData		(int fd);
 			
 		void							addClient		(const int fd, Client user);
 		void							addClient		(const std::string Name, Client user);

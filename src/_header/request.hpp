@@ -4,7 +4,8 @@
 
 # include "irc.hpp"
 
-# define SERVER_NAME std::string("outstanding")
+# define SERVER_NAME	std::string("outstanding")
+# define SERVER_HOST	std::string("127.0.0.1")
 
 
 /*  ----------------------- {LOG} -----------------------  */
@@ -63,5 +64,28 @@
 # define ERR_BADCHANNELKEY(client, channel)(":" + SERVER_NAME + " 475 " + client + " " + channel + " :Cannot join channel (+k)")
 # define ERR_NOCHANMODES(channel)(":" + SERVER_NAME + " 477 " + channel + " :Channel doesn't support modes")
 # define ERR_CHANOPRIVSNEEDED(client, channel)(":" + SERVER_NAME + " 482 " + client + " " + channel + " :You're not channel operator")
+
+
+# define RPL_ONLY(client, channel)(":127.0.0.1 366 " + client + " " + channel + " :End of /NAMES list\r\n")
+
+# define JOIN(name, channel) std::string(":" + name + " JOIN :" + channel + "\r\n")
+# define WHO(name, tname, tnick, channel, Op) std::string(":127.0.0.1 352 " + name + " " + channel + " " + tname + " ircserv 127.0.0.1 " + tnick + " H" + Op + ":0 realname\r\n")
+# define ENDWHO(name, channel) std::string(":127.0.0.1 315 " + name + " " + channel + " :End of /WHO list.\r\n")
+# define RPL_JOIN(prefix, channel)(prefix + " JOIN " + channel + "\r\n")
+# define RPL_PART(prefix, channel)(prefix + " PART " + channel + "\r\n")
+# define RPL_MODE(prefix, channel, mode, name)(prefix + " MODE " + channel + " " + mode + " " + name + "\r\n")
+# define RPL_KICK(prefix, channel, target)(prefix + " KICK " + channel + " " + target + "\r\n")
+# define RPL_NEWKICK(prefix, channel, target, comment)(prefix + " KICK " + channel + " " + target + " :" + comment + "\r\n")
+# define RPL_INVITERCVR(prefix, invitee, channel)(prefix + " INVITE " + invitee + " " + channel + "\r\n")
+# define RPL_NICK(prefix, newNick)(prefix + " NICK " + newNick + "\r\n")
+# define RPL_TOPIC(prefix, channel, topic)(prefix + " TOPIC " + channel + " :" + topic + "\r\n")
+# define RPL_NOTOPIC(client, channel)(":127.0.0.1 331 " + client + " " + channel + " :No topic is set\r\n")
+# define RPL_SEETOPIC(client, channel, topic)(":127.0.0.1 332 " + client + " " + channel + " :" + topic + "\r\n")
+# define RPL_NAMEREPLY(nick, channel, nicknames)(":127.0.0.1 353 " + nick + " = " + channel + " :" + nicknames + "\r\n")
+# define ENDLISTCLIENT(name, channel) std::string(":127.0.0.1 366 " + name + " " + channel + " :End of /NAMES list.\r\n")
+
+#define RPL_CHANNELMODEIS(nick, channel, modes)(": 324 " + nick + " " + channel + " " + modes + "\r\n")
+
+
 
 #endif
