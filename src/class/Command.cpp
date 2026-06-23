@@ -107,12 +107,9 @@ void Command::fNick(Client& user, Cmd& cmd)
 	
 	if (serv.checkClient(cmd.arg(0)))
 		return serv.putMsg(user, ERR_NICKNAMEINUSE(user.getNickName(), cmd.arg(0)));
-	if (serv.checkClient(user.getNickName()))
-		serv.rmClient(user);
 	user.setNickName(cmd.arg(0));
-	serv.addClient(cmd.arg(0), user);
-
 	checkAuthenti(user, serv);
+	serv.putMsg(user, RPL_NICK(user.getNickName()));
 }
 
 
@@ -135,7 +132,6 @@ void Command::fUser(Client& user, Cmd& cmd)
 void Command::fQuit(Client& user, Cmd& cmd)
 {
 	(void) cmd;
-    (void) user;
 
 	user.clearChannel();
     Server& serv = Server::getInstance();
@@ -358,7 +354,7 @@ void Command::fKick(Client& user, Cmd& cmd)
 			channel.rmUser(kicked.getFd());
 			logScript(LOG_KCIK(toString(user.getFd()),user.getNickName(), kicked.getNickName(), channel.getName()));
             ++itU;
-			(*serv.findChannel(*itC)).second.log(); // --------------------------------------------------- tmp
+			(*serv.findChannel(*itC)).second.log();
         }
         ++itC;
     }
@@ -383,6 +379,8 @@ void Command::fJoin(Client& user, Cmd& cmd)
             if (serv.findChannel(*itC) != serv.endChannel())
             {
                 Channel& channel = (*serv.findChannel(*itC)).second;
+				if (channel.findUser(user.getFd()) != -1)
+					return ;
                 if (channel.getMode('i') && channel.findInvite(user.getFd()) == -1)
                     return serv.putMsg(user, ERR_INVITEONLYCHAN(user.getNickName(), *itC));
                 else if (channel.getMode('l'))
@@ -394,7 +392,8 @@ void Command::fJoin(Client& user, Cmd& cmd)
                 else
                     return serv.putMsg(user, ERR_BADCHANNELKEY(user.getNickName(), *itC));
                 logScript(LOG_JOIN_MEMBER(toString(user.getFd()), user.getNickName(), *itC));
-				(*serv.findChannel(*itC)).second.log(); // --------------------------------------------------- tmp
+				serv.putMsg(channel, RPL_JOIN(user.getPrefix(), *itC));
+				(*serv.findChannel(*itC)).second.log();
             }
             else
             {
@@ -405,7 +404,7 @@ void Command::fJoin(Client& user, Cmd& cmd)
 				serv.putMsg(user, RPL_JOIN(user.getPrefix(), *itC));
 				logScript(LOG_JOIN_OP(toString(user.getFd()), user.getNickName(), *itC));
                 (*serv.findChannel(*itC)).second.addOperator(user.getFd());
-				(*serv.findChannel(*itC)).second.log(); // --------------------------------------------------- tmp
+				(*serv.findChannel(*itC)).second.log();
             }
         }
         else

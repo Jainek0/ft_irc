@@ -9,7 +9,7 @@ Server::Server(int port, std::string password)
 }
 
 Server::Server(const Server &other)
-	: _port(other._port), _servfd(other._servfd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
+	: _port(other._port), _servFd(other._servFd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
 {}
 
 Server& Server::getInstance(int port, std::string password) 
@@ -20,8 +20,8 @@ Server& Server::getInstance(int port, std::string password)
 
 void	Server::setup(void)
 {
-	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (_servfd == -1)
+	_servFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_servFd == -1)
 	{
 		std::cerr << "socket()";
 		throw Server::SetupErrorException();
@@ -29,7 +29,7 @@ void	Server::setup(void)
 	//if (setsockopt(SO_REUSEADDR));??
 	//int endian = 1;
 	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
-	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
+	if (fcntl(_servFd, F_SETFL ,O_NONBLOCK))
 	{
 		std::cerr << "fcntl()";
 		throw Server::SetupErrorException();
@@ -40,20 +40,20 @@ void	Server::setup(void)
 	_servaddr.sin_port = htons(_port);
 	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
 
-	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
+	if (bind(_servFd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
 	{
 		std::cerr << "bind()";
 		throw Server::SetupErrorException();
 	}
-	if (listen(_servfd, 10))
+	if (listen(_servFd, 10))
 	{
 		std::cerr << "listen()";
 		throw Server::SetupErrorException();
 	}
-	memset(&_pollfds, 0, sizeof(_pollfds));
-	_pollfds[0].fd = _servfd;
-	_pollfds[0].events = POLLIN;
-	_pollfds[0].revents = 0;
+	memset(&_pollFds, 0, sizeof(_pollFds));
+	_pollFds[0].fd = _servFd;
+	_pollFds[0].events = POLLIN;
+	_pollFds[0].revents = 0;
 
 	signal(SIGINT, Server::sigHandler);
 	signal(SIGQUIT, Server::sigHandler);
@@ -78,10 +78,10 @@ Server::~Server()
 {
 	for (int i = 0; i < 1024; i++)
 	{
-		if (_pollfds[i].fd)
-			close(_pollfds[i].fd);
+		if (_pollFds[i].fd)
+			close(_pollFds[i].fd);
 	}
-	logScript(LOG_END(toString(_servfd)));
+	logScript(LOG_END(toString(_servFd)));
 }
 
 //getter/setter
@@ -131,6 +131,10 @@ bool                       		Server::checkClient(const std::string nick)	const  
 
 bool                       		Server::checkPass(const std::string pass)	const  	{ return (_password == pass); }
 
+const mapClient_i_t				&Server::getMapClientsFd(void) const {return (_clientsFd);}
+
+const mapClient_s_t 			&Server::getMapClientsNick(void) const {return (_clientsNick);}
+
 
 
 /* ------------------------------------< work in progres >------------------------------------ */
@@ -162,12 +166,12 @@ const int	&Server::getPort(void)const
 
 struct pollfd		*Server::getPollfds(void)
 {
-	return (_pollfds);
+	return (_pollFds);
 }
 
 struct pollfd		Server::getPollfds(int  i)
 {
-	return (_pollfds[i]);
+	return (_pollFds[i]);
 }
 
 
@@ -178,7 +182,7 @@ const std::string	&Server::getPassword(void)const
 
 int	Server::getServFd(void)const
 {
-	return (_servfd);
+	return (_servFd);
 }
 
 //exceptions
@@ -195,7 +199,7 @@ int	Server::acceptClient(void)
 	struct sockaddr_in	clientip;
 	
 	addrsize = sizeof(clientip);
-	clientfd = accept(_servfd, (struct sockaddr *)&clientip, &addrsize);
+	clientfd = accept(_servFd, (struct sockaddr *)&clientip, &addrsize);
 	if (clientfd == -1)
 	{
 		std::cout << "client connection failed" << std::endl;
@@ -213,41 +217,41 @@ int	Server::acceptClient(void)
 	//add clientfd in the pollfd arr.
 	for(int i = 0; i < 1023; i++)
 	{
-		if(!_pollfds[i].fd)
+		if(!_pollFds[i].fd)
 		{
-			_pollfds[i].fd = clientfd;
-			_pollfds[i].events = POLLIN;
-			_pollfds[i].revents = 0;
+			_pollFds[i].fd = clientfd;
+			_pollFds[i].events = POLLIN;
+			_pollFds[i].revents = 0;
 			break;
 		}
 	}
 	std::cout << "fd " << clientfd << " opened for client" << std::endl;
-	logScript(LOG_ACCEPTCLIENT(toString(_servfd), toString(clientfd)));
+	logScript(LOG_ACCEPTCLIENT(toString(_servFd), toString(clientfd)));
 	return (clientfd);
 }
 
 void	Server::rmClient(Client	&client)
 {
 	
-	int			clientfd = client.getFd();
-	std::string	clientnick = client.getNickName();
+	int			clientFd = client.getFd();
+	std::string	clientNick = client.getNickName();
 	try
 	{
-		_clientsNick.erase(clientnick);
-		_clientsFd.erase(clientfd);
-		std::cout << "client " << clientnick << " disconnected" << std::endl;
+		_clientsNick.erase(clientNick);
+		_clientsFd.erase(clientFd);
+		_msg.erase(clientFd);
+		std::cout << "client " << clientNick << " disconnected" << std::endl;
 	}
 	catch(std::exception &e)
 	{
-		std::cerr << "Cannot remove : client does not exist" << std::endl;
 		std::cerr << e.what() << std::endl;
 	}
 	for(int i = 0; i < 1023; i++)
 	{
-		if(_pollfds[i].fd == clientfd)
+		if(_pollFds[i].fd == clientFd)
 		{
-			_pollfds[i].fd = 0;
-			close(clientfd);
+			_pollFds[i].fd = 0;
+			close(clientFd);
 			return;
 		}
 	}
@@ -258,7 +262,9 @@ void	Server::recieveData(int fd)
 	char		buff[SIZEBUFF];
 
 	memset(buff, 0, SIZEBUFF);
-	static std::string	msg;
+	if (_msg.find(fd) == _msg.end())
+		_msg.insert(std::make_pair(fd, ""));
+	std::string &msg = _msg.at(fd);
 	int bytes = recv(fd, buff, SIZEBUFF, 0);
 	if (bytes == 0)
 		return rmClient(_clientsFd.at(fd));
