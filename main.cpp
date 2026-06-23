@@ -11,12 +11,9 @@ int	init(Server &myserver)//, struct sigaction &signal)
 	}
 	catch(std::exception &e)
 	{
-		//clear
 		std::cerr << e.what() << std::endl;
 		return (-1);
 	}
-	//setup signal
-	
 	return (0);
 }
 

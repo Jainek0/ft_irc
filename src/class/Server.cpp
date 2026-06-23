@@ -154,45 +154,6 @@ void	Server::putMsg(const Channel& target, const std::string& msg)
 			rmClient(_clientsFd.at(*it));
 }
 
-//constructor/destructor
-void	Server::setup(void)
-{
-	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (_servfd == -1)
-	{
-		std::cerr << "socket()";
-		throw Server::SetupErrorException();
-	}
-	//if (setsockopt(SO_REUSEADDR));??
-	//int endian = 1;
-	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
-	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
-	{
-		std::cerr << "fcntl()";
-		throw Server::SetupErrorException();
-	}
-
-	//vv set values in the sockaddr struct vv
-	_servaddr.sin_family = AF_INET;
-	_servaddr.sin_port = htons(_port);
-	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
-
-	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
-	{
-		std::cerr << "bind()";
-		throw Server::SetupErrorException();
-	}
-	if (listen(_servfd, 10))
-	{
-		std::cerr << "listen()";
-		throw Server::SetupErrorException();
-	}
-	memset(&_pollfds, 0, sizeof(_pollfds));
-	_pollfds[0].fd = _servfd;
-	_pollfds[0].events = POLLIN;
-	_pollfds[0].revents = 0;
-}
-
 //getters/setters
 const int	&Server::getPort(void)const
 {
@@ -267,12 +228,20 @@ int	Server::acceptClient(void)
 
 void	Server::rmClient(Client	&client)
 {
-	std::cout << "client " << client.getNickName() << " disconnected" << std::endl;
-
-	int	clientfd = client.getFd();
-	if (_clientsNick.find(client.getNickName()) != _clientsNick.end())
-		_clientsNick.erase(client.getNickName());
-	_clientsFd.erase(clientfd);
+	
+	int			clientfd = client.getFd();
+	std::string	clientnick = client.getNickName();
+	try
+	{
+		_clientsNick.erase(clientnick);
+		_clientsFd.erase(clientfd);
+		std::cout << "client " << clientnick << " disconnected" << std::endl;
+	}
+	catch(std::exception &e)
+	{
+		std::cerr << "Cannot remove : client does not exist" << std::endl;
+		std::cerr << e.what() << std::endl;
+	}
 	for(int i = 0; i < 1023; i++)
 	{
 		if(_pollfds[i].fd == clientfd)
@@ -284,9 +253,7 @@ void	Server::rmClient(Client	&client)
 	}
 }
 
-#define SIZEBUFF 5
-
-void	Server::receiveData(int fd)
+void	Server::recieveData(int fd)
 {
 	char		buff[SIZEBUFF];
 
