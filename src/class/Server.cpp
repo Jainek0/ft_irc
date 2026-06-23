@@ -64,18 +64,10 @@ void	Server::sigHandler(int sig)
 	g_sig = sig;
 }
 
-// Server& Server::operator=(const Server &other)
-// {
-//     if (this != &other)
-//     {
-//         _clients = other._clients;
-//         _channels = other._channels;
-//     }
-//     return *this;
-// }
-
 Server::~Server()
 {
+	if (_servFd > 2)
+		close(_servFd);
 	for (int i = 0; i < 1024; i++)
 	{
 		if (_pollFds[i].fd)
@@ -275,6 +267,6 @@ void	Server::recieveData(int fd)
 	if (pos != std::string::npos)
 	{
 		Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos));
-		msg.erase(0, pos + 2);
+		msg.erase(0, pos + 2);//invalid read 8 after disconnect
 	}
 }
