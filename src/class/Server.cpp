@@ -1,5 +1,7 @@
 #include "../_header/irc.hpp"
 
+
+//constructor/destructor
 Server::Server(int port, std::string password)
 	: _port(port), _password(password) 
 {
@@ -14,6 +16,52 @@ Server& Server::getInstance(int port, std::string password)
 {
 	static Server server(port, password);
 	return server;
+}
+
+void	Server::setup(void)
+{
+	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_servfd == -1)
+	{
+		std::cerr << "socket()";
+		throw Server::SetupErrorException();
+	}
+	//if (setsockopt(SO_REUSEADDR));??
+	//int endian = 1;
+	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
+	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
+	{
+		std::cerr << "fcntl()";
+		throw Server::SetupErrorException();
+	}
+
+	//vv set values in the sockaddr struct vv
+	_servaddr.sin_family = AF_INET;
+	_servaddr.sin_port = htons(_port);
+	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
+
+	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
+	{
+		std::cerr << "bind()";
+		throw Server::SetupErrorException();
+	}
+	if (listen(_servfd, 10))
+	{
+		std::cerr << "listen()";
+		throw Server::SetupErrorException();
+	}
+	memset(&_pollfds, 0, sizeof(_pollfds));
+	_pollfds[0].fd = _servfd;
+	_pollfds[0].events = POLLIN;
+	_pollfds[0].revents = 0;
+
+	signal(SIGINT, Server::sigHandler);
+	signal(SIGQUIT, Server::sigHandler);
+}
+
+void	Server::sigHandler(int sig)
+{
+	g_sig = sig;
 }
 
 // Server& Server::operator=(const Server &other)
@@ -36,6 +84,7 @@ Server::~Server()
 	logScript(LOG_END(toString(_servfd)));
 }
 
+//getter/setter
 void Server::addClient(const int fd, Client user)
 {
 	_clientsFd.insert(std::make_pair(fd, user));
