@@ -26,6 +26,10 @@
 # include <csignal>//signal
 # include <fcntl.h>//fcntl
 
+/*  ----------------------- {global} -----------------------  */
+
+extern int	g_sig;
+
 /*  ----------------------- {FORWARD DECL} -----------------------  */
 
 class Client;
@@ -61,6 +65,7 @@ typedef std::map<std::string, Client> mapClient_s_t;
 
 
 # define ERR_BAD_PID "ERROR : BAD DEFINE PID"
+# define SIZEBUFF 5
 
 
 /*  ----------------------- {func} -----------------------  */

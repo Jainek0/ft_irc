@@ -50,6 +50,8 @@ class Server
 
 		static Server& 					getInstance		(int port = -1, std::string password = "");
 		
+		static void						sigHandler		(int s);
+
 
 		class	SetupErrorException : public std::exception
 		{

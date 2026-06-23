@@ -1,5 +1,7 @@
 #include "../_header/irc.hpp"
 
+
+//constructor/destructor
 Server::Server(int port, std::string password)
 	: _port(port), _password(password) 
 {
@@ -14,6 +16,52 @@ Server& Server::getInstance(int port, std::string password)
 {
 	static Server server(port, password);
 	return server;
+}
+
+void	Server::setup(void)
+{
+	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_servfd == -1)
+	{
+		std::cerr << "socket()";
+		throw Server::SetupErrorException();
+	}
+	//if (setsockopt(SO_REUSEADDR));??
+	//int endian = 1;
+	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
+	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
+	{
+		std::cerr << "fcntl()";
+		throw Server::SetupErrorException();
+	}
+
+	//vv set values in the sockaddr struct vv
+	_servaddr.sin_family = AF_INET;
+	_servaddr.sin_port = htons(_port);
+	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
+
+	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
+	{
+		std::cerr << "bind()";
+		throw Server::SetupErrorException();
+	}
+	if (listen(_servfd, 10))
+	{
+		std::cerr << "listen()";
+		throw Server::SetupErrorException();
+	}
+	memset(&_pollfds, 0, sizeof(_pollfds));
+	_pollfds[0].fd = _servfd;
+	_pollfds[0].events = POLLIN;
+	_pollfds[0].revents = 0;
+
+	signal(SIGINT, Server::sigHandler);
+	signal(SIGQUIT, Server::sigHandler);
+}
+
+void	Server::sigHandler(int sig)
+{
+	g_sig = sig;
 }
 
 // Server& Server::operator=(const Server &other)
@@ -36,6 +84,7 @@ Server::~Server()
 	logScript(LOG_END(toString(_servfd)));
 }
 
+//getter/setter
 void Server::addClient(const int fd, Client user)
 {
 	_clientsFd.insert(std::make_pair(fd, user));
@@ -82,66 +131,6 @@ bool                       		Server::checkClient(const std::string nick)	const  
 
 bool                       		Server::checkPass(const std::string pass)	const  	{ return (_password == pass); }
 
-
-
-/* ------------------------------------< work in progres >------------------------------------ */
-
-/*      a changer pour envoiler les msg a target et pas le print comme actuellement     */
-void	Server::putMsg(const Client& target, const std::string& msg)	const
-{
-	send(target.getFd(), msg.c_str(), msg.size(), 0);
-
-	std::cout << "[" << target.getNickName() + "] " + msg << std::endl;
-}
-
-void	Server::putMsg(const Channel& target, const std::string& msg) const
-{
-	target.log();
-	std::set<int> lst(target.getUser());
-	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
-		send(*it, msg.c_str(), msg.size(), 0);
-}
-
-//constructor/destructor
-void	Server::setup(void)
-{
-	_servfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (_servfd == -1)
-	{
-		std::cerr << "socket()";
-		throw Server::SetupErrorException();
-	}
-	//if (setsockopt(SO_REUSEADDR));??
-	//int endian = 1;
-	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
-	if (fcntl(_servfd, F_SETFL ,O_NONBLOCK))
-	{
-		std::cerr << "fcntl()";
-		throw Server::SetupErrorException();
-	}
-
-	//vv set values in the sockaddr struct vv
-	_servaddr.sin_family = AF_INET;
-	_servaddr.sin_port = htons(_port);
-	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
-
-	if (bind(_servfd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
-	{
-		std::cerr << "bind()";
-		throw Server::SetupErrorException();
-	}
-	if (listen(_servfd, 10))
-	{
-		std::cerr << "listen()";
-		throw Server::SetupErrorException();
-	}
-	memset(&_pollfds, 0, sizeof(_pollfds));
-	_pollfds[0].fd = _servfd;
-	_pollfds[0].events = POLLIN;
-	_pollfds[0].revents = 0;
-}
-
-//getters/setters
 const int	&Server::getPort(void)const
 {
 	return (_port);
@@ -232,18 +221,58 @@ void	Server::rmClient(Client	&client)
 	}
 }
 
+// void	Server::recieveData(int fd)
+// {
+// 	char		buff[1024];
+// 	std::string	msg;
+
+// 	//store message in a string.
+// 	memset(buff, 0, 1024);
+// 	while (!strstr(buff, "\n"))
+// 	{
+// 		if (!recv(fd, buff, 1024, 0))
+// 			rmClient(_clientsFd.at(fd));
+// 		msg += buff;
+// 	}
+// 	Command::handleCommand((_clientsFd.find(fd))->second, msg);
+// }
+
 void	Server::recieveData(int fd)
 {
-	char		buff[1024];
-	std::string	msg;
+	char	buff[SIZEBUFF];
 
-	//store message in a string.
-	memset(buff, 0, 1024);
-	while (!strstr(buff, "\n"))
+	memset(buff, 0, SIZEBUFF);
+	static std::string    msg;
+	int bytes = recv(fd, buff, SIZEBUFF, 0);
+	if (bytes == 0)
+		return rmClient(_clientsFd.at(fd));
+	if (bytes < 0)
+		return ;
+	msg.append(buff, bytes);
+	size_t pos = msg.find("\r\n");
+	if (pos != std::string::npos)
 	{
-		if (!recv(fd, buff, 1024, 0))
-			rmClient(_clientsFd.at(fd));
-		msg += buff;
+		//vérifier l'existance des destinataires avant envoi.
+		// Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos + 2));
+		Command::handleCommand(_clientsFd.at(fd), msg.substr(0, pos + 2));
+		msg.erase(0, pos + 2);
 	}
-	Command::handleCommand((_clientsFd.find(fd))->second, msg);
+}
+
+/* ------------------------------------< work in progres >------------------------------------ */
+
+/*      a changer pour envoyer les msg a target et pas le print comme actuellement     */
+void	Server::putMsg(const Client& target, const std::string& msg)	const
+{
+	send(target.getFd(), msg.c_str(), msg.size(), 0);
+
+	std::cout << "[" << target.getNickName() + "] " + msg << std::endl;
+}
+
+void	Server::putMsg(const Channel& target, const std::string& msg) const
+{
+	target.log();
+	std::set<int> lst(target.getUser());
+	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
+		send(*it, msg.c_str(), msg.size(), 0);
 }

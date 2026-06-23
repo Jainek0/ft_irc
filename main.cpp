@@ -1,5 +1,7 @@
 #include "src/_header/irc.hpp"
 
+int g_sig = 0;
+
 int	init(Server &myserver)//, struct sigaction &signal)
 {
 	try
@@ -32,17 +34,20 @@ int	main(int argc, char **argv)
 	Server &myserver = Server::getInstance(port, argv[2]);
 	// struct sigaction	signal;
 	// memset(&signal, 0, sizeof(signal));
-	if (init(myserver))//, signal
+	if (init(myserver))
 		return (1);
+
 	//main loop
-	while(1)//while sigal == false
+	while(!g_sig)
 	{
-		if (poll(myserver.getPollfds(), 1024, -1) == -1)
+		int	retpoll = poll(myserver.getPollfds(), 1024, 1000);
+		if (retpoll == -1)
 		{
 			std::cout << "poll error" << std::endl;
-			//close all fds
 			return(1);
 		}
+		if (retpoll == 0)
+			continue ;
 		for(int i = 0; i < 1024; i++)
 		{
 			if ((myserver.getPollfds(i)).revents == POLLIN)//&POLLIN?
