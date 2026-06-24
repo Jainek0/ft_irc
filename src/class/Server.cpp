@@ -231,7 +231,7 @@ void	Server::rmClient(Client	&client)
 	{
 		_clientsNick.erase(clientNick);
 		_clientsFd.erase(clientFd);
-		_msg.erase(clientFd);
+		// _msg.erase(clientFd);
 		std::cout << "client " << clientNick << " disconnected" << std::endl;
 	}
 	catch(std::exception &e)
@@ -267,6 +267,6 @@ void	Server::recieveData(int fd)
 	if (pos != std::string::npos)
 	{
 		Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos));
-		msg.erase(0, pos + 2);//invalid read 8 after disconnect
+		msg.erase(0, pos + 2);
 	}
 }

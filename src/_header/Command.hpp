@@ -11,7 +11,7 @@ class Command
 
 		/*  ------------------< commands >------------------  */
 
-		static 	void			fJoin		(Client& user, Cmd& cmd);
+		static 	void			fJoin			(Client& user, Cmd& cmd);
 		static 	void			fKick			(Client& user, Cmd& cmd);
 		static 	void			fMode			(Client& user, Cmd& cmd);
 		static 	void			fTopic			(Client& user, Cmd& cmd);
