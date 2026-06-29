@@ -18,14 +18,11 @@ class Command
 		static 	void			fPrivmsg		(Client& user, Cmd& cmd);
 		static 	void			fQuit			(Client& user, Cmd& cmd);
 		static 	void			fInvite			(Client& user, Cmd& cmd);
+		static 	void			fPart			(Client& user, Cmd& cmd);
 
 		static 	void			fUser			(Client& user, Cmd& cmd);
 		static 	void			fNick			(Client& user, Cmd& cmd);
 		static	void			fPass			(Client& user, Cmd& cmd);
-
-		void					nickname		(Client &user);
-		void					username		(Client &user);
-		void					password		(Client &user);
 
 	private:
 		static mapCommand_t	createCommands	();

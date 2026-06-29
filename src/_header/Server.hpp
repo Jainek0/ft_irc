@@ -8,7 +8,7 @@ class Server
 {
 	public:
 		~Server();
-		void								setup					(void);
+		void								setup					();
 
 		void								putMsg					(const Client& target, const std::string& msg);
 		void								putMsg					(const Channel& target,const std::string& msg);
@@ -17,33 +17,34 @@ class Server
 		bool 								checkClient				(const std::string nick) 						const;
 		bool 								checkClient				(const int fd) 									const;
 
-		mapClient_i_t::const_iterator		endClientFd				()												const;
-		mapClient_s_t::const_iterator		endClientNick			()												const;
+		mapClient_t::const_iterator			endClientFd				()												const;
+		mapNick_t::const_iterator			endNicks				()												const;
 		mapChannel_t::const_iterator		endChannel				()												const;
 
-		int									acceptClient			(void);
+		int									acceptClient			();
 		void 								rmClient				(Client &client);
+		void 								rmNick					(const std::string nickName);
 		void								recieveData				(int fd);
 
 		void								addClient				(const int fd, Client user);
-		void								addClient				(const std::string Name, Client user);
+		void								addNick					(const std::string Name, const int);
 		void								addChannel				(const std::string name, Channel channel);
 
 		//getters/setters	
-		const int							&getPort				(void)											const;
-		const std::string					&getPassword			(void)											const;
-		const mapClient_i_t					&getMapClientsFd		(void)											const;
-		const mapClient_s_t					&getMapClientsNick		(void)											const;
-		int									getServFd				(void)											const;
-		struct pollfd						*getPollfds				(void);
+		const int							&getPort				()												const;
+		const std::string					&getPassword			()												const;
+		const mapClient_t					&getMapClientsFd		()												const;
+		const mapNick_t						&getMapClientsNick		()												const;
+		int									getServFd				()												const;
+		struct pollfd						*getPollfds				();
 		struct pollfd						getPollfds				(int i);
 
-		mapClient_i_t::iterator				findClient				(const int fd);
-		mapClient_s_t::iterator				findClient				(const std::string Name);
+		mapClient_t::iterator				findClient				(const int fd);
+		mapClient_t::iterator				findClient				(const std::string Name);
 		mapChannel_t::iterator				findChannel				(const std::string name);
 
-		mapClient_i_t::iterator				beginClientFd			();
-		mapClient_s_t::iterator				beginNick				();
+		mapClient_t::iterator				beginClientFd			();
+		mapNick_t::iterator					beginNick				();
 		mapChannel_t::iterator				beginChannel			();
 
 
@@ -64,8 +65,8 @@ class Server
 		struct pollfd				_pollFds[1024];
 		struct sockaddr_in			_servaddr;
 		const std::string			_password;
-		mapClient_i_t				_clientsFd;
-		mapClient_s_t				_clientsNick;
+		mapClient_t					_clientsFd;
+		mapNick_t					_nicks;
 		mapChannel_t				_channels;
 		std::map<int, std::string>	_msg;
 

@@ -1,10 +1,22 @@
 #include "../_header/irc.hpp"
 
+void checkAuthenti(Client& user, Server& serv)
+{
+	(void) serv;
+	if (user.getNickName().empty())
+		return ;
+	if (user.getUserName().empty())
+		return ;
+	if (user.getAuthenti() > 0)
+		user.setAuthenti(2);
+}
+
 mapCommand_t Command::createCommands()
 {
     mapCommand_t commands;
 
     commands["KICK"] = &Command::fKick;
+    commands["PART"] = &Command::fPart;
     commands["JOIN"] = &Command::fJoin;
     commands["MODE"] = &Command::fMode;
     commands["TOPIC"] = &Command::fTopic;
@@ -30,10 +42,13 @@ void Command::handleCommand(Client& user, std::string input)
 			fUser(user, cmd);
 		else if (cmd.command() == "NICK")
 			fNick(user, cmd);
+		else if (cmd.command() == "QUIT")
+			fQuit(user, cmd);
 		else if (cmd.command() == "PASS")
 			fPass(user, cmd);
 		else if (cmd.command() != "CAP" && cmd.command() != "0")
-			serv.putMsg(user, "error no authenti");
+			return serv.putMsg(user, ERR_NOTREGISTERED());
+		checkAuthenti(user, serv);
 	}
 	else 
 	{
@@ -49,21 +64,9 @@ void Command::handleCommand(Client& user, std::string input)
 /* ------------------------------------< commands >------------------------------------ */
 
 
-void checkAuthenti(Client& user, Server& serv)
-{
-	(void) serv;
-	if (user.getNickName().empty())
-		return serv.putMsg(user, "tmp :plz use NICK <nick name>");
-	if (user.getUserName().empty())
-		return serv.putMsg(user, "tmp :plz use USER <user name>");
-
-	if (user.getAuthenti() > 0)
-		user.setAuthenti(2);
-}
-
 void Command::fPass(Client& user, Cmd& cmd)
 {
-    Server& serv = Server::getInstance();
+	Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty())
 		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
@@ -71,7 +74,6 @@ void Command::fPass(Client& user, Cmd& cmd)
 	if (!serv.checkPass(cmd.arg(0)))
 		return serv.putMsg(user, ERR_PASSWDMISMATCH(user.getNickName()));
 	user.setAuthenti(1);
-	checkAuthenti(user, serv);
 }
 
 bool checkName(std::string name)
@@ -80,10 +82,10 @@ bool checkName(std::string name)
 		return true;
 	if (name.find(',') != std::string::npos || \
 		name.find(':') != std::string::npos || \
-		name.find(' ') != std::string::npos || \
 		name.find('*') != std::string::npos || \
 		name.find('?') != std::string::npos || \
 		name.find('!') != std::string::npos || \
+		name.find('#') != std::string::npos || \
 		name.find('@') != std::string::npos )
 		return true;
     for (size_t i = 0; i < name.size(); i++)
@@ -99,16 +101,23 @@ void Command::fNick(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
+	std::cout << cmd.arg(0) << std::endl; // test
 	if (cmd.arg(0).empty())
 		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
-	if (checkName(cmd.arg(0)))
+	if (checkName(cmd.arg(0)) || !cmd.arg(1).empty())
 		return serv.putMsg(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
 	
-	if (serv.checkClient(cmd.arg(0)))
+	if (user.getNickName() == cmd.arg(0))
+		return ;
+	
+	if (!serv.checkClient(cmd.arg(0)))
+	{
 		return serv.putMsg(user, ERR_NICKNAMEINUSE(user.getNickName(), cmd.arg(0)));
+	}
+	serv.rmNick(user.getNickName());
+	serv.addNick(cmd.arg(0), user.getFd());
 	user.setNickName(cmd.arg(0));
-	checkAuthenti(user, serv);
 	serv.putMsg(user, RPL_NICK(user.getNickName()));
 }
 
@@ -122,7 +131,6 @@ void Command::fUser(Client& user, Cmd& cmd)
 	if (checkName(cmd.arg(0)))
 		return serv.putMsg(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
 	user.setUserName(cmd.arg(0));
-	checkAuthenti(user, serv);
 }
 
 
@@ -157,15 +165,15 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 		Channel& channel = (*serv.findChannel((*itT))).second;
 		if (channel.findUser(user.getFd()) <= 0)
 			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
-		serv.putMsg(channel, user.getPrefix() + cmd.argcs(1));
+		serv.putMsg(channel, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.arg(1)));
 	}
 	else
 	{
-		if (serv.findClient((*itT)) == serv.endClientNick())
+		if (serv.findClient((*itT)) == serv.endClientFd())
 			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
 
-		Client& client = (*serv.findClient((*itT))).second;
-		serv.putMsg(client, cmd.argcs(1));
+		Client& target = (*serv.findClient((*itT))).second;
+		serv.putMsg(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.arg(1)));
 	}
 }
 
@@ -184,7 +192,7 @@ void Command::fInvite(Client& user, Cmd& cmd)
 
 	while (itU != lstUser.end())
 	{
-		if (serv.endClientNick() == serv.findClient(*itU))
+		if (serv.endClientFd() == serv.findClient(*itU))
 			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
 		Client invited(serv.findClient(*itU)->second);
 		while (itC != lstChannel.end())
@@ -273,7 +281,7 @@ void Command::fMode(Client& user, Cmd& cmd)
 		{
 			if (cmd.arg(2 + i).empty())
 				return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
-			if (serv.findClient(cmd.arg(2 + i)) == serv.endClientNick())
+			if (serv.findClient(cmd.arg(2 + i)) == serv.endClientFd())
 				return serv.putMsg(user, ERR_USERNOTINCHANNEL(cmd.arg(2 + i),channel.getName()));
 			Client client = (serv.findClient(cmd.arg(2 + i)))->second;
 			if (channel.findUser(client.getFd()) <= 0)
@@ -316,6 +324,38 @@ void Command::fTopic(Client& user, Cmd& cmd)
 	logScript(LOG_TOPIC(toString(user.getFd()), user.getNickName(), channel.getName(), channel.getTopic()));
 }
 
+void Command::fPart(Client& user, Cmd& cmd)
+{
+    Server& serv = Server::getInstance();
+
+    std::vector<std::string> lstChannel(split(cmd.arg(0), ','));
+    std::vector<std::string>::iterator itC(lstChannel.begin());
+
+   
+    if (lstChannel.size() < 1)
+        return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+    
+    while (itC != lstChannel.end())
+    {
+		if (itC->empty() || (*itC)[0] != '#' || !(*itC)[1])
+            return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), *itC));
+        (*itC).erase(0,1);
+		if (serv.findChannel(*itC) == serv.endChannel())
+            return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
+        Channel& channel = (*serv.findChannel(*itC)).second;
+		channel.log();
+
+		if (channel.findUser(user.getFd()) <= 0)
+			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itC));
+		serv.putMsg(channel, RPL_PART(user.getPrefix(), channel.getName()));
+		channel.rmUser(user.getFd());
+		logScript(LOG_PART(toString(user.getFd()),user.getNickName(), channel.getName()));
+		(*serv.findChannel(*itC)).second.log();
+        ++itC;
+    }
+}
+
+
 void Command::fKick(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
@@ -326,7 +366,7 @@ void Command::fKick(Client& user, Cmd& cmd)
     std::vector<std::string> lstUser(split(cmd.arg(1), ','));
     std::vector<std::string>::iterator itU(lstUser.begin()); 
 
-    std::string reason(cmd.arg(2)); // a verifier si argcs est le vrais comportement
+    std::string reason(cmd.arg(2));
 
     
     if (lstChannel.size() < 1 || lstUser.size() < 1 || reason.empty())
@@ -343,14 +383,14 @@ void Command::fKick(Client& user, Cmd& cmd)
 		channel.log();
         while (itU != lstUser.end())
         {
-			if (serv.endClientNick() == serv.findClient(*itU))
+			if (serv.endClientFd() == serv.findClient(*itU))
             	return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
        		Client& kicked = (*serv.findClient(*itU)).second;
 			if (channel.findOperator(user.getFd()) <= 0)
 				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 			if (channel.findUser(kicked.getFd()) <= 0)
 				return serv.putMsg(user, ERR_USERNOTINCHANNEL(*itU,*itC));
-			serv.putMsg(channel, RPL_KICK(user.getPrefix(), channel.getName(), kicked.getNickName()));
+			serv.putMsg(channel, RPL_KICK(user.getPrefix(), channel.getName(), kicked.getNickName(), reason));
 			channel.rmUser(kicked.getFd());
 			logScript(LOG_KCIK(toString(user.getFd()),user.getNickName(), kicked.getNickName(), channel.getName()));
             ++itU;

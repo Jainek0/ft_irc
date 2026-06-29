@@ -9,7 +9,7 @@ Server::Server(int port, std::string password)
 }
 
 Server::Server(const Server &other)
-	: _port(other._port), _servFd(other._servFd), _password(other._password), _clientsFd(other._clientsFd), _clientsNick(other._clientsNick), _channels(other._channels)
+	: _port(other._port), _servFd(other._servFd), _password(other._password), _clientsFd(other._clientsFd), _nicks(other._nicks), _channels(other._channels)
 {}
 
 Server& Server::getInstance(int port, std::string password) 
@@ -80,13 +80,11 @@ Server::~Server()
 void Server::addClient(const int fd, Client user)
 {
 	_clientsFd.insert(std::make_pair(fd, user));
-	_clientsNick.insert(std::make_pair(user.getNickName(), user));
 }
 
-void Server::addClient(const std::string Name, Client user)
+void Server::addNick(const std::string nickName, const int fd)
 { 
-	_clientsFd.insert(std::make_pair(user.getFd(), user));
-	_clientsNick.insert(std::make_pair(Name, user));
+	_nicks.insert(std::make_pair(nickName, fd));
 }
 
 void Server::addChannel(const std::string name, Channel channel)
@@ -96,46 +94,47 @@ void Server::addChannel(const std::string name, Channel channel)
 
 
 
-mapClient_i_t::iterator    		Server::findClient(const int fd)					{ return (_clientsFd.find(fd)); }
+mapClient_t::iterator    		Server::findClient(const int fd)					{ return (_clientsFd.find(fd)); }
 
-mapClient_s_t::iterator    		Server::findClient(const std::string Name)			{ return (_clientsNick.find(Name)); }
+mapClient_t::iterator    		Server::findClient(const std::string Name)			{ return (_clientsFd.find(_nicks.find(Name)->second)); }
 
 mapChannel_t::iterator    		Server::findChannel(const std::string name)			{ return (_channels.find(name)); }
 
 
-mapClient_i_t::const_iterator 	Server::endClientFd()     					const	{ return (_clientsFd.end()); }
+mapClient_t::const_iterator 	Server::endClientFd()     					const	{ return (_clientsFd.end()); }
 
-mapClient_s_t::const_iterator 	Server::endClientNick()   					const	{ return (_clientsNick.end()); }
+mapNick_t::const_iterator		Server::endNicks()   						const	{ return (_nicks.end()); }
 
 mapChannel_t::const_iterator  	Server::endChannel()      					const	{ return (_channels.end()); }
 
 
-mapClient_i_t::iterator    		Server::beginClientFd()                 			{ return (_clientsFd.begin()); }
+mapClient_t::iterator    		Server::beginClientFd()                 			{ return (_clientsFd.begin()); }
 
-mapClient_s_t::iterator    		Server::beginNick()       							{ return (_clientsNick.begin()); }
+mapNick_t::iterator    			Server::beginNick()       							{ return (_nicks.begin()); }
 
 mapChannel_t::iterator     		Server::beginChannel()      						{ return (_channels.begin()); }
 
 
-bool                       		Server::checkClient(const int fd) 			const	{ return (_clientsFd.find(fd) != _clientsFd.end()); }
+bool                       		Server::checkClient(const int fd) 			const	{ return (_clientsFd.find(fd) == _clientsFd.end()); }
 
-bool                       		Server::checkClient(const std::string nick)	const  	{ return (_clientsNick.find(nick) != _clientsNick.end()); }
+bool                       		Server::checkClient(const std::string nick)	const  	{
+
+	return (_nicks.find(nick) == _nicks.end()); 
+}
 
 bool                       		Server::checkPass(const std::string pass)	const  	{ return (_password == pass); }
 
-const mapClient_i_t				&Server::getMapClientsFd(void) const {return (_clientsFd);}
+const mapClient_t				&Server::getMapClientsFd(void) const {return (_clientsFd);}
 
-const mapClient_s_t 			&Server::getMapClientsNick(void) const {return (_clientsNick);}
+const mapNick_t 			&Server::getMapClientsNick(void) const {return (_nicks);}
 
 
 
 /* ------------------------------------< work in progres >------------------------------------ */
 
-/*      a changer pour envoiler les msg a target et pas le print comme actuellement     */
 void	Server::putMsg(const Client& target, const std::string& msg)
 {
 	std::string output(msg + "\r\n");
-	// std::string output(msg);
 	if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
 			rmClient(_clientsFd.at(target.getFd()));
 }
@@ -222,6 +221,11 @@ int	Server::acceptClient(void)
 	return (clientfd);
 }
 
+void	Server::rmNick(const std::string nickName)
+{
+	_nicks.erase(nickName);
+}
+
 void	Server::rmClient(Client	&client)
 {
 	
@@ -229,9 +233,8 @@ void	Server::rmClient(Client	&client)
 	std::string	clientNick = client.getNickName();
 	try
 	{
-		_clientsNick.erase(clientNick);
+		_nicks.erase(clientNick);
 		_clientsFd.erase(clientFd);
-		// _msg.erase(clientFd);
 		std::cout << "client " << clientNick << " disconnected" << std::endl;
 	}
 	catch(std::exception &e)
@@ -263,10 +266,10 @@ void	Server::recieveData(int fd)
 	if (bytes < 0)
 		return ;
 	msg.append(buff, bytes);
-	size_t pos = msg.find("\r\n");
-	if (pos != std::string::npos)
+	size_t pos;
+	while ((pos = msg.find("\r\n")) != std::string::npos)
 	{
-		Command::handleCommand((_clientsFd.find(fd))->second, msg.substr(0, pos));
+		Command::handleCommand(_clientsFd.at(fd), msg.substr(0, pos));
 		msg.erase(0, pos + 2);
 	}
 }

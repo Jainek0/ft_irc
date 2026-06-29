@@ -39,13 +39,12 @@ class Channel;
 /*  ----------------------- {typedef} -----------------------  */
 
 typedef void (*command_t)(Client&, Cmd&);
-typedef std::map<std::string, command_t> mapCommand_t;
+typedef std::map<std::string, command_t>	mapCommand_t;
 
-typedef std::map<std::string, Channel> mapChannel_t;
-typedef mapChannel_t it_mapChannel_t;
+typedef std::map<std::string, Channel>		mapChannel_t;
 
-typedef std::map<int, Client> mapClient_i_t;
-typedef std::map<std::string, Client> mapClient_s_t;
+typedef std::map<int, Client> 				mapClient_t;
+typedef std::map<std::string, const int>	mapNick_t;
 
 
 
@@ -65,7 +64,7 @@ typedef std::map<std::string, Client> mapClient_s_t;
 
 
 # define ERR_BAD_PID "ERROR : BAD DEFINE PID"
-# define SIZEBUFF 5
+# define SIZEBUFF 1024 //size optimal for big server 4096, 1024 small
 
 
 /*  ----------------------- {func} -----------------------  */
