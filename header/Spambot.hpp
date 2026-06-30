@@ -31,13 +31,21 @@ class Spambot
 
 		void receiveData();
 
-		void bothandle(std::string msg);
+		void botHandle(std::string msg);
 
-		void joinChannel(std::string channel);
+		// void joinChannel(std::string channel);
 
-		void spam();
+		void inviteCheck(std::set<std::string> split);
 
-		void overreact(std::string msg);
+		void addCheck(std::set<std::string> split);
+
+		void kickCheck(std::set<std::string> split);
+
+		void botLeave(std::string channel);
+
+		void spamming();
+
+		void overReact(std::string msg);
 
 		//getters/setters
 		// const std::string	&getNickname(void)const {return(_nick);}
