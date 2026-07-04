@@ -25,7 +25,10 @@ void Client::clearChannel()
 	{
 		if (serv.findChannel(*it) != serv.endChannel())
 		{
-			serv.findChannel(*it)->second.rmUser(_fd);
+			Channel &channel = serv.findChannel(*it)->second;
+			channel.rmUser(_fd);
+			if (channel.checkOperator())
+				serv.rmChannel(channel.getName());
 			serv.findChannel(*it)->second.rmInvite(_fd);
 		}
 	}

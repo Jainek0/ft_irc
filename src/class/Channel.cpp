@@ -18,22 +18,24 @@ Channel::Channel(const Channel& other)
     : _name(other._name), _password(other._password), _i(0), _t(0), _l(0)
 {}
 
-// Channel& Channel::operator=(const Channel& other)
-// {
-//     if (this != &other)
-//     {
-//         this->_pasword = other._pasword;
-//         this->_operators = other._operators;
-//         this->_members = other._members;
-//         this->_i = other._i;
-//         this->_l = other._l;
-//         this->_t = other._t;
-//     }
-//     return *this;
-// }
 
 Channel::~Channel()
 {}
+
+bool Channel::checkOperator()
+{
+    if (_operators.size() == 0 && _members.size() == 0)
+        return 1;
+    else if (_operators.size() == 0 && _members.size() > 0)
+    {
+        _operators.insert(*_members.begin());
+        _members.erase(0);
+        Server& serv = Server::getInstance();
+        Client target = serv.findClient(*_operators.begin())->second;
+        serv.putMsg(*this, RPL_MODE(SERVER_PREFIX, _name, "+o", target.getNickName()));
+    }
+    return 0;
+}
 
 int Channel::findOperator(int fd) const
 {
@@ -133,7 +135,7 @@ void Channel::rmInvite(int fd) {
 void Channel::rmUser(int fd)
 {
     if (_operators.find(fd) != _operators.end())
-        _operators.erase(fd); 
+        _operators.erase(fd);
     else
 	{
         _members.erase(fd);
@@ -174,7 +176,11 @@ bool Channel::getMode(const char c) const
 void Channel::setMode(const char c, size_t nb)
 {
     if (c == 'l')
+	{
         _l = nb;
+		std::cout << "nb :" << nb << std::endl;
+		std::cout << "l :" << _l << std::endl;
+	}
     else if (c == 'i')
 	{
         _i = (nb > 0);
@@ -188,31 +194,31 @@ void Channel::setMode(const char c, size_t nb)
 
 void Channel::log() const
 {
-    std::string str( "[" + _name + "] operators <");
-    for (std::set<int>::iterator it = _operators.begin(); it != _operators.end(); )
-    {
-        str += toString(*it);
-        if ((++it) != _operators.end())
-            str += ",";
-    }
+	std::string str( "[" + _name + "] operators <");
+	for (std::set<int>::iterator it = _operators.begin(); it != _operators.end(); )
+	{
+		str += toString(*it);
+		if ((++it) != _operators.end())
+			str += ",";
+	}
 
-    str += "> members <";
-    for (std::set<int>::iterator it = _members.begin(); it != _members.end(); )
-    {
-        str += toString(*it);
-        if ((++it) != _members.end())
-            str += ",";
-    }
+	str += "> members <";
+	for (std::set<int>::iterator it = _members.begin(); it != _members.end(); )
+	{
+		str += toString(*it);
+		if ((++it) != _members.end())
+			str += ",";
+	}
 
 	str += "> invite <";
-    for (std::set<int>::iterator it = _invite.begin(); it != _invite.end(); )
-    {
-        str += toString(*it);
-        if ((++it) != _invite.end())
-            str += ",";
-    }
+	for (std::set<int>::iterator it = _invite.begin(); it != _invite.end(); )
+	{
+		str += toString(*it);
+		if ((++it) != _invite.end())
+			str += ",";
+	}
 
-    str += "> mode \t:";
+	str += "> mode \t:";
 
 	str += "\n\t\t\t\t\t password: <" + _password + ">";
 	str += "\n\t\t\t\t\t topic: <" + _topic + ">";
@@ -220,5 +226,5 @@ void Channel::log() const
 	str += "\n\t\t\t\t\t l: <" + toString(_l) + ">";
 	str += "\n\t\t\t\t\t i: <" + toString(_i) + ">";
 
-    logScript(str);
+	logScript(str);
 }

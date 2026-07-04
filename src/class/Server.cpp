@@ -226,6 +226,12 @@ void	Server::rmNick(const std::string nickName)
 	_nicks.erase(nickName);
 }
 
+void	Server::rmChannel(const std::string name)
+{
+	logScript(LOG_RMCHANNEL(name));
+	_channels.erase(name);
+}
+
 void	Server::rmClient(Client	&client)
 {
 	

@@ -75,6 +75,7 @@ typedef std::map<std::string, const int>	mapNick_t;
 
 std::vector<std::string> split(const std::string& str, char sep);
 void logScript(const std::string& str);
+size_t toSize_t(const std::string& str);
 
 /*  ------------------< commands  */
 

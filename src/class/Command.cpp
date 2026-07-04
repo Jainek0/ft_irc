@@ -260,12 +260,13 @@ void Command::fMode(Client& user, Cmd& cmd)
 			{
 				if (cmd.arg(2 + i).empty())
 					return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
-				channel.setMode(*it, atoi(cmd.arg(2 + i).c_str()));
+				std::cout << "arg : " << cmd.arg(2 + i) << std::endl;
+				std::cout << "size_t : " << toSize_t(cmd.arg(2 + i)) << std::endl;
+				channel.setMode(*it, toSize_t(cmd.arg(2 + i)));
 				++i;
 			}
-			channel.setMode(*it, 0);
 		}
-		if (*it == 'k')
+		else if (*it == 'k')
 		{
 			if (mode)
 			{
@@ -277,7 +278,7 @@ void Command::fMode(Client& user, Cmd& cmd)
 			else
 				channel.setPassword(NULL);
 		}
-		if (*it == 'o')
+		else if (*it == 'o')
 		{
 			if (cmd.arg(2 + i).empty())
 				return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
@@ -289,8 +290,9 @@ void Command::fMode(Client& user, Cmd& cmd)
 			channel.grade(mode, client.getFd());
 			++i;
 		}
+		else
+			channel.setMode(*it, mode);
 		serv.putMsg(user, RPL_MODE(user.getPrefix(), channel.getName(), cmd.arg(1), user.getNickName()));
-		channel.setMode(*it, mode);
 	}
 	channel.log();
 }
@@ -343,15 +345,15 @@ void Command::fPart(Client& user, Cmd& cmd)
 		if (serv.findChannel(*itC) == serv.endChannel())
             return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
         Channel& channel = (*serv.findChannel(*itC)).second;
-		channel.log();
-
 		if (channel.findUser(user.getFd()) <= 0)
 			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itC));
 		serv.putMsg(channel, RPL_PART(user.getPrefix(), channel.getName()));
 		channel.rmUser(user.getFd());
 		logScript(LOG_PART(toString(user.getFd()),user.getNickName(), channel.getName()));
-		(*serv.findChannel(*itC)).second.log();
+		channel.log();
         ++itC;
+		if (channel.checkOperator())
+			serv.rmChannel(channel.getName());
     }
 }
 
@@ -380,7 +382,6 @@ void Command::fKick(Client& user, Cmd& cmd)
 		if (serv.findChannel(*itC) == serv.endChannel())
             return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
         Channel& channel = (*serv.findChannel(*itC)).second;
-		channel.log();
         while (itU != lstUser.end())
         {
 			if (serv.endClientFd() == serv.findClient(*itU))
@@ -394,9 +395,11 @@ void Command::fKick(Client& user, Cmd& cmd)
 			channel.rmUser(kicked.getFd());
 			logScript(LOG_KCIK(toString(user.getFd()),user.getNickName(), kicked.getNickName(), channel.getName()));
             ++itU;
-			(*serv.findChannel(*itC)).second.log();
         }
-        ++itC;
+		(*serv.findChannel(*itC)).second.log();
+		++itC;
+		if (channel.checkOperator())
+			serv.rmChannel(channel.getName());
     }
 }
 

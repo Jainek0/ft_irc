@@ -15,6 +15,9 @@ class Channel
 		const std::string 	getTopic		()								const;
 		bool				emptyPassword	()								const;
 		bool 				checkPassword	(const std::string pass) 		const;
+		
+		bool 				checkOperator	();
+
 
 		int					findOperator	(const int fd)					const;
 		int					findMember		(const int fd)					const;
@@ -25,6 +28,7 @@ class Channel
 		std::set<int>		getMember		()								const;
 		std::set<int>		getUser			()								const;
 		std::set<int>		getInvite		()								const;
+	
 
 
 		bool				getMode			(const char c) 					const;
@@ -46,7 +50,7 @@ class Channel
 		void				clearInvite		();
 
 
-		void				log				()								const; // tmp ? ----------------------------------------------
+		void				log				()								const;
 
 
 

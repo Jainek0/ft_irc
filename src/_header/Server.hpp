@@ -24,6 +24,7 @@ class Server
 		int									acceptClient			();
 		void 								rmClient				(Client &client);
 		void 								rmNick					(const std::string nickName);
+		void 								rmChannel				(const std::string name);
 		void								recieveData				(int fd);
 
 		void								addClient				(const int fd, Client user);
