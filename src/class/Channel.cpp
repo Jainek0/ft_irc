@@ -29,10 +29,10 @@ bool Channel::checkOperator()
     else if (_operators.size() == 0 && _members.size() > 0)
     {
         _operators.insert(*_members.begin());
-        _members.erase(0);
+        _members.erase(*_members.begin());
         Server& serv = Server::getInstance();
         Client target = serv.findClient(*_operators.begin())->second;
-        serv.putMsg(*this, RPL_MODE(SERVER_PREFIX, _name, "+o", target.getNickName()));
+        serv.putMsg(*this, RPL_MODE_P(SERVER_PREFIX, _name, "o", target.getNickName()));
     }
     return 0;
 }
@@ -178,8 +178,6 @@ void Channel::setMode(const char c, size_t nb)
     if (c == 'l')
 	{
         _l = nb;
-		std::cout << "nb :" << nb << std::endl;
-		std::cout << "l :" << _l << std::endl;
 	}
     else if (c == 'i')
 	{

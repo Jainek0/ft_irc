@@ -135,6 +135,7 @@ const mapNick_t 			&Server::getMapClientsNick(void) const {return (_nicks);}
 void	Server::putMsg(const Client& target, const std::string& msg)
 {
 	std::string output(msg + "\r\n");
+	std::cout << output << std::endl;
 	if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
 			rmClient(_clientsFd.at(target.getFd()));
 }
@@ -143,6 +144,7 @@ void	Server::putMsg(const Channel& target, const std::string& msg)
 {
 	target.log();
 	std::string output(msg + "\r\n");
+	std::cout << output << std::endl;
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
 		if (send(*it, output.c_str(), output.size(), 0) < 0)

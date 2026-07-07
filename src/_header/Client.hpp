@@ -10,28 +10,29 @@ class Client
 		Client(const Client &other);
 		~Client();
 
-		const std::string		getNickName	()			  const;
-		const std::string		getUserName	() 			  const;
-		const std::string		getPrefix	() 			  const;
-		int						getFd		()			  const;
-		int						getAuthenti	()			  const;
+		const std::string				getNickName	()			  const;
+		const std::string				getUserName	() 			  const;
+		const std::set<std::string>		getChannels	() 			  const;
+		const std::string				getPrefix	() 			  const;
+		int								getFd		()			  const;
+		int								getAuthenti	()			  const;
 		
 
-		void					setNickName	(const std::string);
-		void					setUserName	(const std::string);
-		void					setAuthenti	(int mod);
+		void							setNickName	(const std::string);
+		void							setUserName	(const std::string);
+		void							setAuthenti	(int mod);
 
-		void					addChannel	(const std::string);
-		void					rmChannel	(const std::string);
-		void					clearChannel();
+		void							addChannel	(const std::string);
+		void							rmChannel	(const std::string);
+		void							clearChannel();
 
 	private:
-		const int 					_fd;
-		const std::string 			_ip;
-		std::string 			_userName;
-		std::string 			_nickName;
-		std::set<std::string>	_channels;
-		int						_authenticated;
+		const int 						_fd;
+		const std::string 				_ip;
+		std::string 					_userName;
+		std::string 					_nickName;
+		std::set<std::string>			_channels;
+		int								_authenticated;
 
 	/*  ------------------< ban >------------------*/
 	
