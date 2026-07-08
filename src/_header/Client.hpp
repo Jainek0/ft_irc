@@ -12,7 +12,7 @@ class Client
 
 		const std::string				getNickName	()			  const;
 		const std::string				getUserName	() 			  const;
-		const std::set<std::string>		getChannels	() 			  const;
+		const std::set<std::string>&	getChannels	() 			  const;
 		const std::string				getPrefix	() 			  const;
 		int								getFd		()			  const;
 		int								getAuthenti	()			  const;

@@ -1,0 +1,72 @@
+[2026-07-08 07:34:26] [4545] ------------------------------------------------------------------< start server 
+[2026-07-08 07:34:44] [4] <- - - [5]
+[2026-07-08 07:35:01] [5] channel <test> was created by <nick>
+[2026-07-08 07:35:01] [5] <nick> join <test> as operator
+[2026-07-08 07:35:01] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:35:09] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:45:26] [4545] ------------------------------------------------------------------< start server 
+[2026-07-08 07:45:32] [4] <- - - [5]
+[2026-07-08 07:45:33] [5] channel <test> was created by <nick>
+[2026-07-08 07:45:33] [5] <nick> join <test> as operator
+[2026-07-08 07:45:33] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:45:40] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:45:52] [5] channel <truc> was created by <test>
+[2026-07-08 07:45:52] [5] <test> join <truc> as operator
+[2026-07-08 07:45:52] [truc] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:45:56] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:45:56] [truc] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:48:17] [4] ------------------------------------------------------------------ end server >
+
+[2026-07-08 07:48:25] [4545] ------------------------------------------------------------------< start server 
+[2026-07-08 07:48:33] [4] <- - - [5]
+[2026-07-08 07:48:34] [5] channel <test> was created by <nick>
+[2026-07-08 07:48:34] [5] <nick> join <test> as operator
+[2026-07-08 07:48:34] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:48:39] [test] operators <5> members <> invite <> mode 	:
+					 password: <>
+					 topic: <>
+					 t: <0>
+					 l: <0>
+					 i: <0>
+[2026-07-08 07:48:50] [4] ------------------------------------------------------------------ end server >
+

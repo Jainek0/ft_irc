@@ -42,7 +42,7 @@ const std::string Client::getNickName() const { return _nickName; }
 
 const std::string Client::getUserName() const { return _userName; }
 
-const std::set<std::string> Client::getChannels() const { return _channels; }
+const std::set<std::string>& Client::getChannels() const { return _channels; }
 
 
 const std::string Client::getPrefix() const { return (":" + _nickName + "!" + _userName + "@" + SERVER_HOST); }

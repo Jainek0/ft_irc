@@ -127,10 +127,7 @@ void Command::fNick(Client& user, Cmd& cmd)
 	}
 	for (std::set<std::string>::iterator it = user.getChannels().begin(); it != user.getChannels().end(); ++it)
 	{
-		std::cout << user.getChannels().size() << std::endl;
-		std::cout << *it << std::endl;
-		std::cout << serv.findChannel(*it)->second.getName() << std::endl;
-		serv.putMsg(serv.findChannel(*it)->second, RPL_NICK(user.getPrefix(), user.getNickName()));
+		serv.putMsg(serv.findChannel(*it)->second, RPL_NICK(user.getPrefix(), cmd.arg(0)));
 	}
 	serv.rmNick(user.getNickName());
 	serv.addNick(cmd.arg(0), user.getFd());
