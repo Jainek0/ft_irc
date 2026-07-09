@@ -1,7 +1,7 @@
 #ifndef SPAMBOT_HPP
 # define SPAMBOT_HPP
 
-//# include "irc.hpp"
+# include "../../ft_irc/src/_header/irc.hpp"
 # include <chrono>
 # include <thread>
 # include <ctime>
@@ -25,27 +25,29 @@ class Spambot
 		Spambot& operator=(Spambot &other);
 		~Spambot();
 
-
-
 		void vigil();
 
-		void receiveData();
+		int	Spambot::receiveData();
 
-		void botHandle(std::string msg);
+		void botHandle(Cmd cmd);
 
-		// void joinChannel(std::string channel);
+		void joinChannel(std::string channel);
 
-		void inviteCheck(std::set<std::string> split);
+		void inviteCheck(Cmd cmd);
 
-		void addCheck(std::set<std::string> split);
+		void addCheck(Cmd cmd);
 
-		void kickCheck(std::set<std::string> split);
+		void kickCheck(Cmd cmd);
 
-		void botLeave(std::string channel);
+		void putMsg(const std::string& msg);
+
+		void Spambot::endBot();
+
+		// void botLeave(std::string channel);
 
 		void spamming();
 
-		void overReact(std::string msg);
+		void overReact(Cmd cmd);
 
 		//getters/setters
 		// const std::string	&getNickname(void)const {return(_nick);}

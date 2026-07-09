@@ -5,57 +5,44 @@ void	Spambot::sa_sig(int sig, siginfo_t info, void *context)
 	_signal = 0;
 }
 
-void	Spambot::receiveData()
+int	Spambot::receiveData()
 {
-	char		buff[SIZEBUFF];
+	char				buff[SIZEBUFF];
+	static std::string	msg;
 
 	memset(buff, 0, SIZEBUFF);
-	static std::string	msg;
-	int bytes = recv(_port, buff, SIZEBUFF, 0);
+	int	bytes = recv(fd, buff, SIZEBUFF, 0);
 	if (bytes == 0)
-		return ;
+		return (1);
+	if (bytes < 0)
+		return (0);
 	msg.append(buff, bytes);
-	size_t pos = msg.find("\r\n");
-	if (pos != std::string::npos)
+	size_t	pos;
+	while ((pos = msg.find("\r\n")) != std::string::npos)
 	{
-		botHandle(msg.substr(0, pos));
+		Cmd	cmd(msg.substr(0, pos));
+		botHandle(cmd);
 		msg.erase(0, pos + 2);
 	}
+	return(0);
 }
 
-void	Spambot::kickCheck(std::set<std::string> split)
+void	Spambot::kickCheck(Cmd cmd)
 {
-	if (split[0] = "KICK")
+	if (cmd.command == "KICK")
 	{
-		if (isChannel(split[1]))
-		{
-			if (split[2] == Spambot.nick)
-				botLeave(split[1]);
-		}
-	}
-
-}
-
-void	Spambot::addCheck(std::set<std::string> split)
-{
-	if()
-	{
-		if()
-		{
-			putmsg(_port, "PRIVATEMSG #channel :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
-			// add the channel to _channels
-		}
+		if (cmd.arg)
+			// substract from _channels
 	}
 }
 
-void	Spambot::botLeave(std::string channel)
+void	Spambot::addCheck(Cmd cmd)
 {
-	if (isChannel(channel))
+	if(cmd.command == "JOIN")
 	{
-		
+		putMsg("PRIVATEMSG #" + cmd.arg + " :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
+		// add the channel to _channels
 	}
-	// check that i have left a channel
-	// substract from _channels
 }
 
 void	Spambot::spamming()
@@ -64,28 +51,28 @@ void	Spambot::spamming()
 		return ;
 	int rng = rand() % 10;
 	if (rng == 0)
-		putmsg(_port, "PRIVATEMSG #channel :free robux");
+		putMsg("PRIVATEMSG #channel :free robux");
 	else if (rng == 1)
-		putmsg(_port, "PRIVATEMSG #channel :click to get money");
+		putMsg("PRIVATEMSG #channel :click to get money");
 	else if (rng == 2)
-		putmsg(_port, "PRIVATEMSG #channel :your computter require an update");
+		putMsg("PRIVATEMSG #channel :your computter require an update");
 	else if (rng == 3)
-		putmsg(_port, "PRIVATEMSG #channel :turning on your camera");
+		putMsg("PRIVATEMSG #channel :turning on your camera");
 	else if (rng == 4)
-		putmsg(_port, "PRIVATEMSG #channel :you have been hacked");
+		putMsg("PRIVATEMSG #channel :you have been hacked");
 	else if (rng == 5)
-		putmsg(_port, "PRIVATEMSG #channel :your mama");
+		putMsg("PRIVATEMSG #channel :your mama");
 	else if (rng == 6)
-		putmsg(_port, "PRIVATEMSG #channel :how to lose fat easily, doctor hate this");
+		putMsg("PRIVATEMSG #channel :how to lose fat easily, doctor hate this");
 	else if (rng == 7)
-		putmsg(_port, "PRIVATEMSG #channel :babes in your area");
+		putMsg("PRIVATEMSG #channel :babes in your area");
 	else if (rng == 8)
-		putmsg(_port, "PRIVATEMSG #channel :try this new mobile game");
+		putMsg("PRIVATEMSG #channel :try this new mobile game");
 	else if (rng == 9)
-		putmsg(_port, "PRIVATEMSG #channel :nobody loves you");
+		putMsg("PRIVATEMSG #channel :nobody loves you");
 }
 
-void	Spambot::overReact(std::string msg)
+void	Spambot::overReact(Cmd cmd)
 {
 	// if(!_channels.size()>0)
 	// 	return ;
@@ -98,36 +85,30 @@ void	Spambot::overReact(std::string msg)
 	// {
 	// 	box::iterator it shout.find(str);
 	// 	if (it != shout.end()) {
-	// 		putmsg(it->second);
+	// 		putMsg(it->second);
 	// 	}
 	// }
 }
 
-int	isChannel(std::string channel)
+void	Spambot::inviteCheck(Cmd cmd)
 {
-
-	return (0);
-}
-
-void	Spambot::inviteCheck(std::set<std::string> split)
-{
-	if(split[0] == "INVITE")
+	if(cmd.command == "INVITE")
 	{
-		if(isChannel(split[1]))
-		{
-			if(split[2] == Spambot.nick)
-				putmsg(_port, "JOIN #<channel>");
-		}
+		if(cmd.arg == _nick)
+			putMsg("JOIN #<channel>");
 	}
 }
 
-void	Spambot::botHandle(std::string msg)
+void	Spambot::botHandle(Cmd cmd)
 {
-	std::set<std::string> split = (msg);
-	inviteCheck(split);
-	addCheck(split);
-	kickCheck(msg);
-	overReact(msg);
+	if (cmd.prefix == _nick)
+		addCheck(cmd);
+	else
+	{
+		inviteCheck(cmd);
+		kickCheck(cmd);
+		overReact(cmd);
+	}
 	// invite function "INVITE #<channel>"
 	// 	->joinChannel(<channel>);
 	// if added to a channel
@@ -136,7 +117,7 @@ void	Spambot::botHandle(std::string msg)
 	// 	->botLeave
 	// react function "PRIVATEMSG #<channel> :<message>"
 
-	check that i am not alone in the channel
+	// check that i am not alone in the channel
 }
 
 void	Spambot::vigil()
@@ -161,9 +142,21 @@ void	Spambot::vigil()
 		{
 			timethen = datetime.tm_min;
 			spamming();
-			//putmsg(_port, "PRIVATEMSG #channel :spamming in progress");
+			//putMsg(_port, "PRIVATEMSG #channel :spamming in progress");
 		}	
 	}
+}
+
+void	putMsg(const std::string& msg)
+{
+	std::string output(msg + "\r\n");
+	if (send(_port, output.c_str(), output.size(), 0) < 0)
+			endBot();
+}
+
+void	Spambot::endBot()
+{
+
 }
 
 Spambot::Spambot(int _port, std::string nick, std::string pass) : _signal(1), _port(_port)
@@ -174,10 +167,11 @@ Spambot::Spambot(int _port, std::string nick, std::string pass) : _signal(1), _p
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGINT, &sa, NULL);
-	putmsg(_port, "PASS " + pass);
+	putMsg("PASS " + pass);
 	// check pass error
-	putmsg(_port, "NICK " + nick);
+	putMsg("NICK " + nick);
 	// check nick error
-	putmsg(_port, "USER bot");
+	putMsg("USER bot");
+	// check user bot
 	vigil();
 }
