@@ -27,6 +27,7 @@ void Client::clearChannel()
 		{
 			Channel &channel = serv.findChannel(*it)->second;
 			channel.rmUser(_fd);
+			serv.putMsg(channel, RPL_QUIT(getPrefix()));
 			if (channel.checkOperator())
 				serv.rmChannel(channel.getName());
 			serv.findChannel(*it)->second.rmInvite(_fd);

@@ -70,13 +70,16 @@
 # define ERR_CHANOPRIVSNEEDED(client, channel)(SERVER_PREFIX + " 482 " + client + " #" + channel + " :You're not channel operator")
 
 
+
 # define RPL_ONLY(client, channel)(SERVER_PREFIX + " 366 " + client + " #" + channel + " :End of /NAMES list")
 
 # define JOIN(name, channel) std::string(":" + name + " JOIN :" + channel)
+# define RPL_QUIT(prefix)(std::string(prefix)  + " QUIT")
 # define WHO(name, tname, tnick, channel, Op) std::string(SERVER_PREFIX + " 352 " + name + " #" + channel + " " + tname + " ircserv 127.0.0.1 " + tnick + " H" + Op + ":0 realname")
 # define ENDWHO(name, channel) std::string(SERVER_PREFIX + " 315 " + name + " #" + channel + " :End of /WHO list.")
 # define RPL_JOIN(prefix, channel)(std::string(prefix)  + " JOIN #" + channel)
 # define RPL_PART(prefix, channel)(std::string(prefix)  + " PART #" + channel)
+# define RPL_MODE(user, channel, mode)(SERVER_PREFIX + " 324 " + user + " " + channel + mode)
 # define RPL_MODE_P(prefix, channel, mode, name)(std::string(prefix)  + " MODE #" + channel + " +" + mode + " " + name)
 # define RPL_MODE_M(prefix, channel, mode, name)(std::string(prefix)  + " MODE #" + channel + " -" + mode + " " + name)
 # define RPL_KICK(prefix, channel, target, comment)(std::string(prefix)  + " KICK #" + channel + " " + target + " :" + comment)

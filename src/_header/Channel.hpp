@@ -28,6 +28,7 @@ class Channel
 		std::set<int>		getMember		()								const;
 		std::set<int>		getUser			()								const;
 		std::set<int>		getInvite		()								const;
+		std::string			getMode			()								const;
 	
 
 

@@ -150,6 +150,30 @@ std::set<int>	Channel::getMember()	const {return _members;}
 
 std::set<int>	Channel::getInvite()	const {return _invite;}
 
+std::string 	Channel::getMode()	const {
+    std::string mode = " +";
+    std::string arg;
+
+    if (_i)
+        mode += "i";
+    if (_t)
+        mode += "t";
+    if (_l)
+    {
+        mode += "l";
+        arg = " " + toString(_l);
+    }
+    if (!_password.empty())
+    {
+        mode += "k";
+        arg += " " + _password;
+    }
+    if (mode.size() == 2)
+        mode.clear();
+    return mode + arg;
+}
+
+
 std::set<int>	Channel::getUser()	const 
 {
     std::set<int> tmp(_members);

@@ -255,6 +255,11 @@ void Command::fMode(Client& user, Cmd& cmd)
 	if (channel.findOperator(user.getFd()) <= 0)
 		return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 
+	if (cmd.arg(1).empty())
+	{
+		return serv.putMsg(user, RPL_MODE(user.getNickName(), channel.getName(), channel.getMode()));
+	}
+
 	size_t i(0);
 	size_t mode(0);
 	std::string str(cmd.arg(1));
@@ -349,7 +354,7 @@ void Command::fTopic(Client& user, Cmd& cmd)
 	{
 		if (channel.getTopic().empty())
 			return serv.putMsg(channel, RPL_NOTOPIC(user.getNickName(), channel.getName()));
-		return serv.putMsg(user, channel.getName() + " :" + channel.getTopic());
+		return serv.putMsg(user, RPL_TOPIC(user.getPrefix(), channel.getName(), cmd.argcs(1)));
 	}
 	if (channel.getMode('t') && channel.findOperator(user.getFd()) < 1)
 		return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
