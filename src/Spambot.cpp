@@ -5,13 +5,15 @@ void	Spambot::sa_sig(int sig, siginfo_t info, void *context)
 	_signal = 0;
 }
 
+bool	Spambot::getSignal() {return _signal;}
+
 int	Spambot::receiveData()
 {
 	char				buff[SIZEBUFF];
 	static std::string	msg;
 
 	memset(buff, 0, SIZEBUFF);
-	int	bytes = recv(fd, buff, SIZEBUFF, 0);
+	int	bytes = recv(_port, buff, SIZEBUFF, 0);
 	if (bytes == 0)
 		return (1);
 	if (bytes < 0)
@@ -29,19 +31,19 @@ int	Spambot::receiveData()
 
 void	Spambot::kickCheck(Cmd cmd)
 {
-	if (cmd.command == "KICK")
+	if (cmd.command() == "KICK")
 	{
-		if (cmd.arg)
-			// substract from _channels
+		if (cmd.arg(0) == _nick)
+			_channels.erase(cmd.arg(1));
 	}
 }
 
 void	Spambot::addCheck(Cmd cmd)
 {
-	if(cmd.command == "JOIN")
+	if(cmd.command() == "JOIN")
 	{
-		putMsg("PRIVATEMSG #" + cmd.arg + " :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
-		// add the channel to _channels
+		putMsg("PRIVATEMSG #" + cmd.arg(0) + " :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
+		_channels.insert(cmd.arg(0));
 	}
 }
 
@@ -92,16 +94,18 @@ void	Spambot::overReact(Cmd cmd)
 
 void	Spambot::inviteCheck(Cmd cmd)
 {
-	if(cmd.command == "INVITE")
+	if(cmd.command() == "INVITE")
 	{
-		if(cmd.arg == _nick)
-			putMsg("JOIN #<channel>");
+		if(cmd.arg(0) == _nick)
+			putMsg("JOIN #" + cmd.arg(1));
 	}
 }
 
 void	Spambot::botHandle(Cmd cmd)
 {
-	if (cmd.prefix == _nick)
+	if (cmd.command() == "451")
+		endBot();
+	if (cmd.prefix() == _nick + "!bot@127.0.0.1")
 		addCheck(cmd);
 	else
 	{
@@ -147,7 +151,7 @@ void	Spambot::vigil()
 	}
 }
 
-void	putMsg(const std::string& msg)
+void	Spambot::putMsg(const std::string& msg)
 {
 	std::string output(msg + "\r\n");
 	if (send(_port, output.c_str(), output.size(), 0) < 0)
@@ -156,8 +160,9 @@ void	putMsg(const std::string& msg)
 
 void	Spambot::endBot()
 {
-
+	_signal = 0;
 }
+
 
 Spambot::Spambot(int _port, std::string nick, std::string pass) : _signal(1), _port(_port)
 {
@@ -165,13 +170,11 @@ Spambot::Spambot(int _port, std::string nick, std::string pass) : _signal(1), _p
 
 	sa.sa_sigaction = sa_sig;
 	sa.sa_flags = SA_SIGINFO;
+	_signal = 1;
 	sigemptyset(&sa.sa_mask);
 	sigaction(SIGINT, &sa, NULL);
 	putMsg("PASS " + pass);
-	// check pass error
 	putMsg("NICK " + nick);
-	// check nick error
 	putMsg("USER bot");
-	// check user bot
-	vigil();
+	vigil(); // ?
 }

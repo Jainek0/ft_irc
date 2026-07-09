@@ -1,7 +1,6 @@
 #ifndef SPAMBOT_HPP
 # define SPAMBOT_HPP
 
-# include "../../ft_irc/src/_header/irc.hpp"
 # include <chrono>
 # include <thread>
 # include <ctime>
@@ -10,8 +9,13 @@
 # include <signal.h>
 # include <map>
 # include <set>
+# include <vector>
 # include <sys/socket.h>
 # include <cstring>
+# include <sstream>
+
+
+# include "Cmd.hpp"
 
 # define SIZEBUFF 1024
 typedef std::map<std::string, std::string> box;
@@ -49,9 +53,14 @@ class Spambot
 
 		void overReact(Cmd cmd);
 
+		void putMsg(const std::string&);
+
+
 		//getters/setters
 		// const std::string	&getNickname(void)const {return(_nick);}
 		// void				setNickname(std::string nick) {_nick = nick;}
+
+		bool	getSignal();
 
 	private:
 		void					sa_sig(int sig, siginfo_t info, void *context);
@@ -60,6 +69,7 @@ class Spambot
 		int 					_port;
 		std::set<std::string>	_channels;
 		std::string				_msg;
+		std::string				_nick;
 };
 
 #endif
