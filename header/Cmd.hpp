@@ -1,4 +1,3 @@
-
 #ifndef CMD_HPP
 # define CMD_HPP
 
@@ -7,7 +6,7 @@
 class Cmd
 {
     public:
-        Cmd(std::string& str);
+        Cmd(std::string str);
         Cmd(const Cmd& other);
         Cmd& operator=(const Cmd& other);
         ~Cmd();

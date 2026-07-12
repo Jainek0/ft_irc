@@ -1,9 +1,8 @@
 #ifndef SPAMBOT_HPP
 # define SPAMBOT_HPP
 
-# include <chrono>
-# include <thread>
 # include <ctime>
+# include <cstdlib>
 # include <iostream>
 # include <istream>
 # include <signal.h>
@@ -11,9 +10,10 @@
 # include <set>
 # include <vector>
 # include <sys/socket.h>
-# include <cstring>
 # include <sstream>
+# include <cstring>
 
+#include <arpa/inet.h>
 
 # include "Cmd.hpp"
 
@@ -25,13 +25,12 @@ class Spambot
 	public:
 		//constructor/destructor
 		Spambot(int port, std::string nick, std::string pass);
-		Spambot(Spambot &other);
-		Spambot& operator=(Spambot &other);
+
 		~Spambot();
 
 		void vigil();
 
-		int	Spambot::receiveData();
+		int	receiveData();
 
 		void botHandle(Cmd cmd);
 
@@ -43,18 +42,20 @@ class Spambot
 
 		void kickCheck(Cmd cmd);
 
-		void putMsg(const std::string& msg);
-
-		void Spambot::endBot();
+		void endBot();
 
 		// void botLeave(std::string channel);
 
+		void loopChannel(std::string msg);
 		void spamming();
 
 		void overReact(Cmd cmd);
 
 		void putMsg(const std::string&);
 
+		static void sa_sig(int sig);
+
+		bool initSocket();
 
 		//getters/setters
 		// const std::string	&getNickname(void)const {return(_nick);}
@@ -63,13 +64,17 @@ class Spambot
 		bool	getSignal();
 
 	private:
-		void					sa_sig(int sig, siginfo_t info, void *context);
-		bool					_signal;
+		static volatile sig_atomic_t 	_signal;
 
-		int 					_port;
-		std::set<std::string>	_channels;
-		std::string				_msg;
-		std::string				_nick;
+		int 							_port;
+		int 							_socket;
+		std::set<std::string>			_channels;
+		std::string						_msg;
+		std::string						_nick;
+		std::string						_prefix;
+
+		Spambot(Spambot &other);
+		Spambot& operator=(Spambot &other);
 };
 
 #endif

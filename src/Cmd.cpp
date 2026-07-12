@@ -4,7 +4,7 @@
 Cmd::~Cmd()
 {}
 
-Cmd::Cmd(std::string& str)
+Cmd::Cmd(std::string str)
 {
     std::istringstream  ss(str);
     std::string         token;
