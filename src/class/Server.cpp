@@ -5,7 +5,7 @@
 Server::Server(int port, std::string password)
 	: _port(port), _password(password) 
 {
-	logScript( LOG_START(toString(port)));
+	logScript(LOG_START(toString(port)));
 }
 
 Server::Server(const Server &other)
@@ -26,16 +26,13 @@ void	Server::setup(void)
 		std::cerr << "socket()";
 		throw Server::SetupErrorException();
 	}
-	//if (setsockopt(SO_REUSEADDR));??
-	//int endian = 1;
-	//setsockopt(_servfd, SOL_SOCKET, SO_REUSEADDR, &endian, sizeof(endian));
+
 	if (fcntl(_servFd, F_SETFL ,O_NONBLOCK))
 	{
 		std::cerr << "fcntl()";
 		throw Server::SetupErrorException();
 	}
 
-	//vv set values in the sockaddr struct vv
 	_servaddr.sin_family = AF_INET;
 	_servaddr.sin_port = htons(_port);
 	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
@@ -130,8 +127,6 @@ const mapNick_t 			&Server::getMapClientsNick(void) const {return (_nicks);}
 
 
 
-/* ------------------------------------< work in progres >------------------------------------ */
-
 void	Server::putMsg(const Client& target, const std::string& msg)
 {
 	std::string output(msg + "\r\n");
@@ -142,13 +137,25 @@ void	Server::putMsg(const Client& target, const std::string& msg)
 
 void	Server::putMsg(const Channel& target, const std::string& msg)
 {
-	target.log();
 	std::string output(msg + "\r\n");
 	std::cout << output << std::endl;
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
 		if (send(*it, output.c_str(), output.size(), 0) < 0)
 			rmClient(_clientsFd.at(*it));
+}
+
+void	Server::putMsg(const Channel& target, const Client& user, const std::string& msg)
+{
+	std::string output(msg + "\r\n");
+	std::cout << output << std::endl;
+	std::set<int> lst(target.getUser());
+	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
+	{
+		if (*it != user.getFd())
+			if (send(*it, output.c_str(), output.size(), 0) < 0)
+				rmClient(_clientsFd.at(*it));
+	}
 }
 
 //getters/setters

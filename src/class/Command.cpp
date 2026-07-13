@@ -42,10 +42,10 @@ void Command::handleCommand(Client& user, std::string input)
 			fUser(user, cmd);
 		else if (cmd.command() == "NICK")
 			fNick(user, cmd);
-		else if (cmd.command() == "QUIT")
-			fQuit(user, cmd);
 		else if (cmd.command() == "PASS")
 			fPass(user, cmd);
+		else if (cmd.command() == "QUIT")
+			return fQuit(user, cmd);
 		else if (cmd.command() != "CAP" && cmd.command() != "0")
 			return serv.putMsg(user, ERR_NOTREGISTERED());
 		checkAuthenti(user, serv);
@@ -178,7 +178,7 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 		Channel& channel = (*serv.findChannel((*itT))).second;
 		if (channel.findUser(user.getFd()) <= 0)
 			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
-		serv.putMsg(channel, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.arg(1)));
+		serv.putMsg(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.arg(1)));
 	}
 	else
 	{
@@ -442,6 +442,21 @@ void Command::fKick(Client& user, Cmd& cmd)
 }
 
 
+void join(Client& user, Channel& channel)
+{
+    Server& serv = Server::getInstance();
+
+	for (std::set<int>::iterator it = channel.getMember().begin(); it != channel.getMember().begin(); ++it)
+	{
+		serv.putMsg(user, RPL_JOIN(serv.findClient(*it)->second.getPrefix(), channel.getName()));
+	}
+	for (std::set<int>::iterator it = channel.getOperator().begin(); it != channel.getMember().begin(); ++it)
+	{
+		serv.putMsg(user, RPL_JOIN(serv.findClient(*it)->second.getPrefix(), channel.getName()));
+	}
+	channel.addMember(user.getFd());
+}
+
 void Command::fJoin(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
@@ -467,9 +482,9 @@ void Command::fJoin(Client& user, Cmd& cmd)
                 else if (channel.getMode('l'))
                     return serv.putMsg(user, ERR_CHANNELISFULL(user.getNickName(), *itC));        
                 else if (channel.emptyPassword())
-                    channel.addMember(user.getFd());
+					join(user, channel);
                 else if (!lstPassord.empty() && channel.checkPassword(*itP++))
-                    channel.addMember(user.getFd());
+					join(user, channel);
                 else
                     return serv.putMsg(user, ERR_BADCHANNELKEY(user.getNickName(), *itC));
                 logScript(LOG_JOIN_MEMBER(toString(user.getFd()), user.getNickName(), *itC));

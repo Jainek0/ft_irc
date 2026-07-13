@@ -11,7 +11,8 @@ class Server
 		void								setup					();
 
 		void								putMsg					(const Client& target, const std::string& msg);
-		void								putMsg					(const Channel& target,const std::string& msg);
+		void								putMsg					(const Channel& target, const std::string& msg);
+		void								putMsg					(const Channel& target, const Client& user,const std::string& msg);
 
 		bool 								checkPass				(const std::string pass) 						const;
 		bool 								checkClient				(const std::string nick) 						const;
