@@ -10,44 +10,34 @@ void Spambot::sa_sig(int sig)
 
 bool	Spambot::getSignal() {return _signal;}
 
-int	Spambot::receiveData()
+void	Spambot::receiveData()
 {
 	char				buff[SIZEBUFF];
 	static std::string	msg;
-	
-	// std::cout << "read" << std::endl;
+
 	memset(buff, 0, SIZEBUFF);
 	int	bytes = recv(_socket, buff, SIZEBUFF, 0);
 	if (bytes > 0)
 		std::cout << buff << std::endl;
 	if (bytes == 0)
-		return (1);
+		endBot();
 	if (bytes < 0)
-		return (0);
+		return ;
 	msg.append(buff, bytes);
 	size_t	pos;
-	while ((pos = msg.find("\r\n")) != std::string::npos)
+	if ((pos = msg.find("\r\n")) != std::string::npos)
 	{
 		Cmd	cmd(msg.substr(0, pos));
-
-		// std::cout << "PREFIX = [" << cmd.prefix() << "]\n"; // test
-		// std::cout << "COMMAND = [" << cmd.command() << "]\n";
-
-		// for (size_t i = 0; i < cmd.sizeArgs(); ++i)
-		// 	std::cout << "ARG " << i << " = [" << cmd.arg(i) << "]\n"; // test
-
 		botHandle(cmd);
 		msg.erase(0, pos + 2);
 	}
-	return(0);
 }
 
 void	Spambot::kickCheck(Cmd cmd)
 {
-	if (cmd.command() == "KICK")
+	if (cmd.command() == "441")
 	{
-		if (cmd.arg(0) == _nick)
-			_channels.erase(cmd.arg(1));
+		_channels.erase(cmd.arg(1));
 	}
 }
 
@@ -103,10 +93,14 @@ void	Spambot::overReact(Cmd cmd)
 	
 	if (cmd.command() == "PRIVMSG")
 	{
-		if (cmd.argcs(1).find("test"))
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " j ai trouver ton test ????");
-		if (cmd.argcs(1).find("ok"))
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " kokokokok");
+		std::cout << "overReact" << std::endl;
+		if (cmd.argcs(1).find("test") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :j ai trouver ton test ????");
+		else if (cmd.argcs(1).find("ok") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :kokokokok");
+		else 
+			std::cout << "no overReact" << std::endl;
+
 	}
 }
 
@@ -126,7 +120,7 @@ void	Spambot::botHandle(Cmd cmd)
 	std::cout << cmd.command() << std::endl;
 	if (cmd.command() == "433")
 		endBot();
-	if (cmd.prefix() == _prefix)
+	if (":" + cmd.prefix() == _prefix)
 		addCheck(cmd);
 	else
 	{
@@ -138,7 +132,7 @@ void	Spambot::botHandle(Cmd cmd)
 
 #include <ctime>
 
-void Spambot::vigil()
+void Spambot::loop()
 {
     std::time_t timecheck;
     std::tm*    datetime;
@@ -151,14 +145,9 @@ void Spambot::vigil()
 
         receiveData();
 
-        if (_msg.find('\n') != std::string::npos)
-        {
-            botHandle(_msg);
-            _msg.clear();
-        }
-
         if (datetime && datetime->tm_min != timethen)
         {
+			std::cout << "spam" << std::endl;
             timethen = datetime->tm_min;
             spamming();
         }
@@ -201,7 +190,7 @@ Spambot::Spambot(int port, std::string nick, std::string pass)
     putMsg("NICK " + nick);
     putMsg("USER bot");
 
-    vigil();
+    loop();
 }
 
 bool Spambot::initSocket()
@@ -231,6 +220,12 @@ bool Spambot::initSocket()
         close(_socket);
         return false;
     }
+	timeval tv;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
+	setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
 
     std::cout << "Connect : " << _port << std::endl;
     return true;

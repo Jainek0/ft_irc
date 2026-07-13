@@ -28,13 +28,11 @@ class Spambot
 
 		~Spambot();
 
-		void vigil();
+		void loop();
 
-		int	receiveData();
+		void receiveData();
 
 		void botHandle(Cmd cmd);
-
-		void joinChannel(std::string channel);
 
 		void inviteCheck(Cmd cmd);
 
@@ -44,9 +42,8 @@ class Spambot
 
 		void endBot();
 
-		// void botLeave(std::string channel);
-
 		void loopChannel(std::string msg);
+
 		void spamming();
 
 		void overReact(Cmd cmd);
@@ -57,11 +54,7 @@ class Spambot
 
 		bool initSocket();
 
-		//getters/setters
-		// const std::string	&getNickname(void)const {return(_nick);}
-		// void				setNickname(std::string nick) {_nick = nick;}
-
-		bool	getSignal();
+		bool getSignal();
 
 	private:
 		static volatile sig_atomic_t 	_signal;
