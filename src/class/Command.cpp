@@ -446,11 +446,11 @@ void join(Client& user, Channel& channel)
 {
     Server& serv = Server::getInstance();
 
-	for (std::set<int>::iterator it = channel.getMember().begin(); it != channel.getMember().begin(); ++it)
+	for (std::set<int>::iterator it = channel.getMember().begin(); it != channel.getMember().end(); ++it)
 	{
 		serv.putMsg(user, RPL_JOIN(serv.findClient(*it)->second.getPrefix(), channel.getName()));
 	}
-	for (std::set<int>::iterator it = channel.getOperator().begin(); it != channel.getMember().begin(); ++it)
+	for (std::set<int>::iterator it = channel.getOperator().begin(); it != channel.getOperator().end(); ++it)
 	{
 		serv.putMsg(user, RPL_JOIN(serv.findClient(*it)->second.getPrefix(), channel.getName()));
 	}

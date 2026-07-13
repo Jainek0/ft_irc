@@ -144,9 +144,9 @@ void Channel::rmUser(int fd)
 
 void Channel::clearInvite() { _invite.clear(); }
 
-std::set<int>	Channel::getOperator()	const {return _operators;}
+const std::set<int>&	Channel::getOperator()	const {return _operators;}
 
-std::set<int>	Channel::getMember()	const {return _members;}
+const std::set<int>&	Channel::getMember()	const {return _members;}
 
 std::set<int>	Channel::getInvite()	const {return _invite;}
 
