@@ -89,7 +89,7 @@
 # define RPL_NOTOPIC(client, channel)(SERVER_PREFIX + " 331 " + client + " #" + channel + " :No topic is set")
 # define RPL_SEETOPIC(client, channel, topic)(SERVER_PREFIX + " 332 " + client + " #" + channel + " :" + topic)
 # define RPL_NAMEREPLY(nick, channel, nicknames)(SERVER_PREFIX + " 353 " + nick + " = #" + channel + " :" + nicknames)
-# define ENDLISTCLIENT(name, channel) std::string(SERVER_PREFIX + " 366 " + name + " #" + channel + " :End of /NAMES list.")
+# define RPL_ENDLISTCLIENT(name, channel) std::string(SERVER_PREFIX + " 366 " + name + " #" + channel + " :End of /NAMES list.")
 
 # define  RPL_PRIVMSGCHANNEL(prefix, channel, msg)(std::string(prefix)  + " PRIVMSG #" + channel + " :" + msg)
 # define  RPL_PRIVMSGUSER(prefix, user, msg)(std::string(prefix)  + " PRIVMSG " + user + " :" + msg)

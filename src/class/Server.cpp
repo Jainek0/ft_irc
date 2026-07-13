@@ -40,10 +40,12 @@ void	Server::setup(void)
 	if (bind(_servFd, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
 	{
 		std::cerr << "bind()";
+		close(_servFd);
 		throw Server::SetupErrorException();
 	}
 	if (listen(_servFd, 10))
 	{
+		close(_servFd);
 		std::cerr << "listen()";
 		throw Server::SetupErrorException();
 	}
@@ -63,12 +65,13 @@ void	Server::sigHandler(int sig)
 
 Server::~Server()
 {
-	if (_servFd > 2)
-		close(_servFd);
 	for (int i = 0; i < 1024; i++)
 	{
-		if (_pollFds[i].fd)
+		if (_pollFds[i].fd > 2)
+		{
 			close(_pollFds[i].fd);
+			_pollFds[i].fd = -1;
+		}
 	}
 	logScript(LOG_END(toString(_servFd)));
 }
@@ -264,6 +267,7 @@ void	Server::rmClient(Client	&client)
 		{
 			_pollFds[i].fd = 0;
 			close(clientFd);
+			clientFd = -1;
 			return;
 		}
 	}
