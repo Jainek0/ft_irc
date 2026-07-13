@@ -46,7 +46,7 @@ void	Spambot::addCheck(Cmd cmd)
 	if(cmd.command() == "JOIN")
 	{
 		std::cout << "privmsg in to " << cmd.arg(0) << std::endl;
-		putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :coucou les amis, il faut que je vous parle de ma nouvelle crypto");
+		putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :");
 		_channels.insert(cmd.arg(0));
 	}
 }
@@ -67,17 +67,17 @@ void	Spambot::spamming()
 	if (rng == 0)
 		loopChannel(":free robux");
 	else if (rng == 1)
-		loopChannel(":click to get money");
+		loopChannel(":click to get your prize money");
 	else if (rng == 2)
-		loopChannel(":your computter require an update");
+		loopChannel(":your computer require an update");
 	else if (rng == 3)
 		loopChannel(":turning on your camera");
 	else if (rng == 4)
 		loopChannel(":you have been hacked");
 	else if (rng == 5)
-		loopChannel(":your mama");
+		loopChannel(":your ugly mama");
 	else if (rng == 6)
-		loopChannel(":how to lose fat easily, doctor hate this");
+		loopChannel(":how to lose fat easily, doctors hate this");
 	else if (rng == 7)
 		loopChannel(":babes in your area");
 	else if (rng == 8)
@@ -95,9 +95,29 @@ void	Spambot::overReact(Cmd cmd)
 	{
 		std::cout << "overReact" << std::endl;
 		if (cmd.argcs(1).find("test") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :j ai trouver ton test ????");
-		else if (cmd.argcs(1).find("ok") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :kokokokok");
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :want to test me ?");
+		else if (cmd.argcs(1).find("yes") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :no");
+		else if (cmd.argcs(1).find("no") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :yes");
+		else if (cmd.argcs(1).find("67") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :six seven !!!");
+		else if (cmd.argcs(1).find("bot") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :and we are legion");
+		else if (cmd.argcs(1).find("left") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :right");
+		else if (cmd.argcs(1).find("right") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :left");
+		else if (cmd.argcs(1).find("up") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :down");
+		else if (cmd.argcs(1).find("down") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :up");
+		else if (cmd.argcs(1).find("hello") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :goodbye");
+		else if (cmd.argcs(1).find("lol") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :you suck");
+		else if (cmd.argcs(1).find("luffy") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :one piece is cringe");
 		else 
 			std::cout << "no overReact" << std::endl;
 
@@ -129,8 +149,6 @@ void	Spambot::botHandle(Cmd cmd)
 		overReact(cmd);
 	}
 }
-
-#include <ctime>
 
 void Spambot::loop()
 {
@@ -167,7 +185,6 @@ void	Spambot::endBot()
 	_signal = 0;
 }
 
-
 Spambot::Spambot(int port, std::string nick, std::string pass)
     : _port(port), _socket(-1), _nick(nick),
       _prefix(":" + nick + "!bot@127.0.0.1")
@@ -189,15 +206,13 @@ Spambot::Spambot(int port, std::string nick, std::string pass)
     putMsg("PASS " + pass);
     putMsg("NICK " + nick);
     putMsg("USER bot");
-
-    loop();
 }
 
 bool Spambot::initSocket()
 {
     sockaddr_in server;
 
-    // Création de la socket
+    // Creation de la socket
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket == -1)
 		return false;
@@ -235,9 +250,9 @@ Spambot::~Spambot()
 {
     if (_socket != -1)
 	{
-		putMsg("QUIT");
+		// putMsg("QUIT");
         if (close(_socket))
 			std::cout << "close soket" << std::endl;
 	}
-	std::cout << "end bot";
+	std::cout << "end bot\n";
 }
