@@ -37,7 +37,7 @@
 
 # define ERR_UMODEUNKNOWNFLAG(client, flag)(SERVER_PREFIX + " 501 " + client + " "  + flag + " :Unknown MODE flag")
 
-# define ERR_NOSUCHCHANNEL(client, channel)(SERVER_PREFIX + " 403 " + client + " #" + channel + ":channel name is invalid, or does not exist")
+# define ERR_NOSUCHCHANNEL(client, channel)(SERVER_PREFIX + " 403 " + client + " #" + channel + " :channel name is invalid, or does not exist")
 
 # define ERR_TOOMUCHPARAMS(client, cmd)(client + " " + cmd + " :Too much parameters")
 # define ERR_USERONCHANNEL(nick, channel)(SERVER_PREFIX + " 303 " + nick + " #" + channel + " :is already on channel")

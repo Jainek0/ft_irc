@@ -236,12 +236,14 @@ void	Server::rmChannel(const std::string name)
 
 void	Server::rmClient(Client	&client)
 {
-	
+	std::cout << "client : " << client.getNickName() << std::endl;
 	int			clientFd = client.getFd();
 	std::string	clientNick = client.getNickName();
 	try
 	{
 		_nicks.erase(clientNick);
+		if (clientNick.empty())
+			clientNick = "< no nick name >";
 		_clientsFd.erase(clientFd);
 		std::cout << "client " << clientNick << " disconnected" << std::endl;
 	}
@@ -258,6 +260,7 @@ void	Server::rmClient(Client	&client)
 			return;
 		}
 	}
+	std::cout << "fd no close : " << clientNick << std::endl;
 }
 
 void	Server::recieveData(int fd)
@@ -270,7 +273,10 @@ void	Server::recieveData(int fd)
 	std::string &msg = _msg.at(fd);
 	int bytes = recv(fd, buff, SIZEBUFF, 0);
 	if (bytes == 0)
+	{
+		std::cout << "rmClient in recv" << std::endl;
 		return rmClient(_clientsFd.at(fd));
+	}
 	if (bytes < 0)
 		return ;
 	msg.append(buff, bytes);

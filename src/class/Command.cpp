@@ -186,7 +186,7 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
 
 		Client& target = (*serv.findClient((*itT))).second;
-		serv.putMsg(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.arg(1)));
+		serv.putMsg(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.argcs(1)));
 	}
 }
 
@@ -224,6 +224,7 @@ void Command::fInvite(Client& user, Cmd& cmd)
 				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 
 			channel.addInvite(invited.getFd());
+			std::cout << "log invite : " << RPL_INVITERCVR(user.getPrefix(), invited.getNickName(), *itC) << std::endl;
 			serv.putMsg(invited, RPL_INVITERCVR(user.getPrefix(), invited.getNickName(), *itC));
 			++itC;
 		}
