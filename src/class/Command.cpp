@@ -442,24 +442,23 @@ void Command::fKick(Client& user, Cmd& cmd)
 }
 
 
-void join(Client& user, Channel& channel)
+void rpl_lst(Client& user, Channel& channel)
 {
     Server& serv = Server::getInstance();
 
 
-	// std::string lst;
-	channel.addMember(user.getFd());
+	std::string lst;
 	serv.putMsg(channel, RPL_JOIN(user.getPrefix(), channel.getName()));
-	// for (std::set<int>::iterator it = channel.getOperator().begin(); it != channel.getOperator().end(); ++it)
-	// {
-	// 	lst +=  "@" + serv.findClient(*it)->second.getNickName() + " ";
-	// }
-	// for (std::set<int>::iterator it = channel.getMember().begin(); it != channel.getMember().end(); ++it)
-	// {
-	// 	lst +=  serv.findClient(*it)->second.getNickName() + " ";
-	// }
-	// serv.putMsg(user, RPL_NAMEREPLY(user.getNickName(), channel.getName(), lst));
-	// serv.putMsg(user, RPL_ENDLISTCLIENT(user.getNickName(), channel.getName()));
+	for (std::set<int>::iterator it = channel.getOperator().begin(); it != channel.getOperator().end(); ++it)
+	{
+		lst +=  "@" + serv.findClient(*it)->second.getNickName() + " ";
+	}
+	for (std::set<int>::iterator it = channel.getMember().begin(); it != channel.getMember().end(); ++it)
+	{
+		lst +=  serv.findClient(*it)->second.getNickName() + " ";
+	}
+	serv.putMsg(user, RPL_NAMEREPLY(user.getNickName(), channel.getName(), lst));
+	serv.putMsg(user, RPL_ENDLISTCLIENT(user.getNickName(), channel.getName()));
 }
 
 void Command::fJoin(Client& user, Cmd& cmd)
@@ -487,9 +486,15 @@ void Command::fJoin(Client& user, Cmd& cmd)
                 else if (channel.getMode('l'))
                     return serv.putMsg(user, ERR_CHANNELISFULL(user.getNickName(), *itC));        
                 else if (channel.emptyPassword())
-					join(user, channel);
+				{
+					channel.addMember(user.getFd());
+					rpl_lst(user, channel);
+				}
                 else if (!lstPassord.empty() && channel.checkPassword(*itP++))
-					join(user, channel);
+				{
+					channel.addMember(user.getFd());
+					rpl_lst(user, channel);
+				}
                 else
                     return serv.putMsg(user, ERR_BADCHANNELKEY(user.getNickName(), *itC));
                 logScript(LOG_JOIN_MEMBER(toString(user.getFd()), user.getNickName(), *itC));
@@ -501,10 +506,10 @@ void Command::fJoin(Client& user, Cmd& cmd)
                     serv.addChannel(*itC, Channel(*itC, user, *(itP++)));
                 else
                     serv.addChannel(*itC, Channel(*itC, user));
-				serv.putMsg(user, RPL_JOIN(user.getPrefix(), *itC));
-				logScript(LOG_JOIN_OP(toString(user.getFd()), user.getNickName(), *itC));
-                (*serv.findChannel(*itC)).second.addOperator(user.getFd());
+				(*serv.findChannel(*itC)).second.addOperator(user.getFd());
 				(*serv.findChannel(*itC)).second.log();
+				rpl_lst(user, (*serv.findChannel(*itC)).second);
+				logScript(LOG_JOIN_OP(toString(user.getFd()), user.getNickName(), *itC));
             }
         }
         else

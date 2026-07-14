@@ -179,6 +179,8 @@ std::set<int>	Channel::getUser()	const
     std::set<int> tmp(_members);
     for (std::set<int>::iterator it = _operators.begin(); it != _operators.end(); ++it)
         tmp.insert(*it);
+    for (std::set<int>::iterator it = _members.begin(); it != _members.end(); ++it)
+        tmp.insert(*it);
     return tmp;
 }
 
