@@ -303,7 +303,7 @@ void Command::fMode(Client& user, Cmd& cmd)
 			}
 			else
 			{
-				channel.setPassword(NULL);
+				channel.setPassword("");
 				serv.putMsg(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
 			}
 			continue;
