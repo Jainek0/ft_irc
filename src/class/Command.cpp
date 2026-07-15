@@ -319,9 +319,9 @@ void Command::fMode(Client& user, Cmd& cmd)
 				return serv.putMsg(user, ERR_USERNOTINCHANNEL(cmd.arg(2 + i),channel.getName()));
 			channel.grade(mode, client.getFd());
 			if (mode)
-				serv.putMsg(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));
+				serv.putMsg(channel, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));
 			else
-				serv.putMsg(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));    
+				serv.putMsg(channel, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));    
 			channel.checkOperator();
 			++i;
 			continue;
@@ -330,7 +330,7 @@ void Command::fMode(Client& user, Cmd& cmd)
 		if (mode)
 			serv.putMsg(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, ""));
 		else
-			serv.putMsg(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
+			serv.putMsg(uer, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
 	}
 	channel.log();
 }
