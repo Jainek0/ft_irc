@@ -43,6 +43,7 @@
 # define ERR_USERONCHANNEL(nick, channel)(SERVER_PREFIX + " 303 " + nick + " #" + channel + " :is already on channel")
 # define ERR_NOSUCHNICK(client, nickname)(SERVER_PREFIX + " 401 " + client + " " + nickname + " :No such nickname")
 # define ERR_BADCHANMASK(nick, channel)(SERVER_PREFIX + " 476 " + nick + " #" + channel + " :Bad Channel Mask")
+# define ERR_BADCHANMASK_O(nick, channel)(SERVER_PREFIX + " 476 " + nick + " " + channel + " :Bad Channel Mask")
 # define ERR_CANNOTSENDTOCHAN(client, channel)(SERVER_PREFIX + " 404 " + client + " #" + channel + " :Cannot send to channel")
 # define ERR_NOTEXTTOSEND(client)(SERVER_PREFIX + " 412 " + client + " :No text to send")
 

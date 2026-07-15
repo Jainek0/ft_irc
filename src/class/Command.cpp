@@ -513,7 +513,7 @@ void Command::fJoin(Client& user, Cmd& cmd)
             }
         }
         else
-            return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), *itC));
+            return serv.putMsg(user, ERR_BADCHANMASK_O(user.getNickName(), *itC));
     }
 }
 
