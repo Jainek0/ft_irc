@@ -16,7 +16,6 @@
 
 # include <sys/socket.h>//socket, bind, ...
 # include <arpa/inet.h>//inet_pton, htons, ...
-# include <cstdio>//perror
 # include <cerrno>//errno
 # include <cstdlib>//exit
 # include <cstring>//memset

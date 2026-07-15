@@ -38,9 +38,9 @@ int	main(int argc, char **argv)
 	while(!g_sig)
 	{
 		int	retpoll = poll(myserver.getPollfds(), 1024, 1000);
-		if (retpoll == -1)
+		if (retpoll == -1 && !g_sig)
 		{
-			std::cout << "poll error" << std::endl;
+			std::cerr << "poll error" << std::endl;
 			return(1);
 		}
 		if (retpoll == 0)

@@ -205,14 +205,12 @@ int	Server::acceptClient(void)
 	clientfd = accept(_servFd, (struct sockaddr *)&clientip, &addrsize);
 	if (clientfd == -1)
 	{
-		std::cout << "client connection failed" << std::endl;
-		perror("client");
+		std::cerr << "client accept failed" << std::endl;
 		return (-1);
 	}
 	if (fcntl(clientfd, F_SETFL ,O_NONBLOCK))
 	{
-		std::cout << "client connection failed" << std::endl;
-		perror("client");
+		std::cerr << "client open failed" << std::endl;
 		return (-1);
 	}
 	Client	newclient(clientfd, inet_ntoa(clientip.sin_addr));
