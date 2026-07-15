@@ -46,7 +46,7 @@ void	Spambot::addCheck(Cmd cmd)
 	if(cmd.command() == "JOIN")
 	{
 		std::cout << "privmsg in to " << cmd.arg(0) << std::endl;
-		putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :");
+		putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :Hello World");
 		_channels.insert(cmd.arg(0));
 	}
 }
@@ -139,6 +139,8 @@ void	Spambot::botHandle(Cmd cmd)
 {
 	std::cout << cmd.command() << std::endl;
 	if (cmd.command() == "433")
+		endBot();
+	if (cmd.command() == "464")
 		endBot();
 	if (":" + cmd.prefix() == _prefix)
 		addCheck(cmd);
@@ -252,7 +254,7 @@ Spambot::~Spambot()
 	{
 		// putMsg("QUIT");
         if (close(_socket))
-			std::cout << "close soket" << std::endl;
+			std::cout << "close socket" << std::endl;
 	}
-	std::cout << "end bot\n";
+	std::cout << "am dead\n";
 }
