@@ -1,9 +1,10 @@
-#include "../_header/irc.hpp"
+
+#include "../header/Spambot.hpp"
 
 Cmd::~Cmd()
 {}
 
-Cmd::Cmd(std::string& str)
+Cmd::Cmd(std::string str)
 {
     std::istringstream  ss(str);
     std::string         token;
