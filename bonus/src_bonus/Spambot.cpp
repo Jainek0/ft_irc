@@ -1,4 +1,4 @@
-#include "../header/Spambot.hpp"
+#include "../header_bonus/Spambot.hpp"
 
 volatile sig_atomic_t Spambot::_signal = 1;
 

@@ -1,4 +1,4 @@
-#include "../header/Spambot.hpp"
+#include "../header_bonus/Spambot.hpp"
 
 int				react = 0;
 
