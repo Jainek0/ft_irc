@@ -25,7 +25,7 @@ void	Spambot::receiveData()
 		return ;
 	msg.append(buff, bytes);
 	size_t	pos;
-	if ((pos = msg.find("\r\n")) != std::string::npos)
+	while ((pos = msg.find("\r\n")) != std::string::npos)
 	{
 		Cmd	cmd(msg.substr(0, pos));
 		botHandle(cmd);
@@ -116,8 +116,8 @@ void	Spambot::overReact(Cmd cmd)
 			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :goodbye");
 		else if (cmd.argcs(1).find("lol") != std::string::npos)
 			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :you suck");
-		else if (cmd.argcs(1).find("luffy") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :one piece is cringe");
+		else if (cmd.argcs(1).find("one piece") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :luffy is cringe");
 		else 
 			std::cout << "no overReact" << std::endl;
 
