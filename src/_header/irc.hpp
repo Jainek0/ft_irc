@@ -20,7 +20,6 @@
 # include <cerrno>//errno
 # include <cstdlib>//exit
 # include <cstring>//memset
-# include <string.h>//strstr
 # include <unistd.h>//close
 # include <poll.h>//poll
 # include <csignal>//signal

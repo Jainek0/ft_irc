@@ -3,7 +3,6 @@ NAME = ircserv
 SRC =	main.cpp \
 		$(wildcard src/class/*.cpp) \
 		$(wildcard src/tools/*.cpp)
-# 		$(wildcard src/*.cpp) 
 
 OBJ = $(SRC:.cpp=.o)
 
