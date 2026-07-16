@@ -29,29 +29,9 @@ int	main(int argc, char **argv)
 	int port = atoi(argv[1]);
 	Server &myserver = Server::getInstance(port, argv[2]);
 	if (init(myserver))
-		return (1);
-
-	//main loop
-	while(!g_sig)
-	{
-		int	retpoll = poll(myserver.getPollfds(), 1024, 1000);
-		if (retpoll == -1 && !g_sig)
-		{
-			std::cerr << "poll error" << std::endl;
-			return(1);
-		}
-		if (retpoll == 0)
-			continue ;
-		for(int i = 0; i < 1024; i++)
-		{
-			if ((myserver.getPollfds(i)).revents & POLLIN)
-			{
-				if ((myserver.getPollfds(i)).fd == myserver.getServFd())
-					myserver.acceptClient();
-				else
-					myserver.recieveData((myserver.getPollfds(i)).fd);
-			}
-		}
-	}
+		return 1;
+		
+	if (myserver.loop())
+		return 1;
 	return 0;
 }

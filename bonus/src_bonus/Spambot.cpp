@@ -118,6 +118,8 @@ void	Spambot::overReact(Cmd cmd)
 			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :you suck");
 		else if (cmd.argcs(1).find("one piece") != std::string::npos)
 			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :luffy is cringe");
+		else if (cmd.argcs(1).find("kroussar") != std::string::npos)
+			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :le goat");
 		else 
 			std::cout << "no overReact" << std::endl;
 
@@ -139,6 +141,8 @@ void	Spambot::botHandle(Cmd cmd)
 {
 	std::cout << cmd.command() << std::endl;
 	if (cmd.command() == "433")
+		endBot();
+	if (cmd.command() == "451")
 		endBot();
 	if (cmd.command() == "464")
 		endBot();
@@ -214,36 +218,26 @@ bool Spambot::initSocket()
 {
     sockaddr_in server;
 
-    // Creation de la socket
     _socket = socket(AF_INET, SOCK_STREAM, 0);
     if (_socket == -1)
 		return false;
-
-    // Initialisation de la structure
     std::memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(_port);
-
-    // Adresse du serveur (localhost)
     if (inet_pton(AF_INET, "127.0.0.1", &server.sin_addr) <= 0)
     {
         close(_socket);
         return false;
     }
-
-    // Connexion
     if (connect(_socket, (sockaddr *)&server, sizeof(server)) == -1)
     {
         close(_socket);
         return false;
     }
 	timeval tv;
-
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
-
 	setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-
     std::cout << "Connect : " << _port << std::endl;
     return true;
 }

@@ -2,7 +2,7 @@
 
 # ft_irc
 
-## Description
+# Description
 
 **ft_irc** is a simplified implementation of an Internet Relay Chat (IRC) server written in **C++98**.
 
@@ -19,7 +19,7 @@ This project focuses on:
 - Channel and user management.
 - Writing clean and modular C++98 code.
 
-## Instructions
+# Instructions
 
 Compile the IRC server and execute it providing a connection port and a password. 
 ex: "./ircserv 4545 pass"
@@ -31,7 +31,7 @@ You can use the commands NICK <nickname>, USER <username>, PASS <password> in a 
 Or they can be configured in Hexchat thanks to the "edit" window.
 Note that a Hexchat not configured properly with the right password won't be able to authenticate after connection.
 
-## Features
+# Features
 
 Once the server is running and has authenticated clients connected, you can use a variety of commands:
 
@@ -51,13 +51,13 @@ Operator only commands :
 
 Note : hexchat syntax ;"/<COMMAND>"
 
-## Resources
+# Resources
 
 Official documentation:
-- [for poll, sockets and other functions](https://beej.us/guide/bgnet/pdf/bgnet_usl_c_1.pdf)
-- [for commands](https://www.rfc-editor.org/rfc/rfc1459.html)
-- [IRC norm](https://www.alien.net.au/irc/irc2numerics.html)
+- for poll, sockets and other functions : https://beej.us/guide/bgnet/pdf/bgnet_usl_c_1.pdf
+- for commands : https://www.rfc-editor.org/rfc/rfc1459.html
+- IRC norm : https://www.alien.net.au/irc/irc2numerics.html
 
-## AI Usage
+# AI Usage
 
 Artificial Intelligence was used for the Tools code and this README.md description.

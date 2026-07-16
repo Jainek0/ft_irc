@@ -3,6 +3,8 @@
 void checkAuthenti(Client& user, Server& serv)
 {
 	(void) serv;
+	if (serv.getPassword().empty())
+		user.setAuthenti(1);
 	if (user.getNickName().empty())
 		return ;
 	if (user.getUserName().empty())
@@ -47,7 +49,7 @@ void Command::handleCommand(Client& user, std::string input)
 		else if (cmd.command() == "QUIT")
 			return fQuit(user, cmd);
 		else if (cmd.command() != "CAP" && cmd.command() != "0")
-			return serv.putMsg(user, ERR_NOTREGISTERED());
+			return serv.addBuffOut(user, ERR_NOTREGISTERED());
 		checkAuthenti(user, serv);
 	}
 	else 
@@ -57,7 +59,7 @@ void Command::handleCommand(Client& user, std::string input)
 		if (itCmd != commands.end())
 			(itCmd->second)(user, cmd);
 		else
-			serv.putMsg(user, ERR_UNKNOWNCOMMAND(user.getNickName(), cmd.command()));
+			serv.addBuffOut(user, ERR_UNKNOWNCOMMAND(user.getNickName(), cmd.command()));
 	}
 }
 
@@ -68,11 +70,12 @@ void Command::fPass(Client& user, Cmd& cmd)
 {
 	Server& serv = Server::getInstance();
 
+	if (serv.getPassword().empty())
+		return ;
 	if (cmd.arg(0).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
-	
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 	if (!serv.checkPass(cmd.arg(0)))
-		return serv.putMsg(user, ERR_PASSWDMISMATCH(user.getNickName()));
+		return serv.addBuffOut(user, ERR_PASSWDMISMATCH(user.getNickName()));
 	user.setAuthenti(1);
 }
 
@@ -80,9 +83,9 @@ bool checkPrint(std::string name)
 {
 	for (std::string::iterator it(name.begin()); it != name.end(); ++it)
 	{
-		if (!isprint(*it))
+		if (!std::isprint(*it))
 			return true;
-		if (iscntrl(*it))
+		if (std::iscntrl(*it))
 			return true;
 		if (*it == ':')
 			return true;
@@ -92,7 +95,7 @@ bool checkPrint(std::string name)
 
 bool checkName(std::string name)
 {
-	if (isdigit(name[0]))
+	if (std::isdigit(name[0]))
 		return true;
 	if (checkPrint(name))
 		return true;
@@ -113,21 +116,21 @@ void Command::fNick(Client& user, Cmd& cmd)
 
 	std::cout << cmd.arg(0) << std::endl;
 	if (cmd.arg(0).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
 	if (checkName(cmd.arg(0)) || !cmd.arg(1).empty())
-		return serv.putMsg(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
+		return serv.addBuffOut(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
 	
 	if (user.getNickName() == cmd.arg(0))
 		return ;
 	
 	if (!serv.checkClient(cmd.arg(0)))
 	{
-		return serv.putMsg(user, ERR_NICKNAMEINUSE(user.getNickName(), cmd.arg(0)));
+		return serv.addBuffOut(user, ERR_NICKNAMEINUSE(user.getNickName(), cmd.arg(0)));
 	}
 	for (std::set<std::string>::iterator it = user.getChannels().begin(); it != user.getChannels().end(); ++it)
 	{
-		serv.putMsg(serv.findChannel(*it)->second, RPL_NICK(user.getPrefix(), cmd.arg(0)));
+		serv.addBuffOut(serv.findChannel(*it)->second, RPL_NICK(user.getPrefix(), cmd.arg(0)));
 	}
 	serv.rmNick(user.getNickName());
 	serv.addNick(cmd.arg(0), user.getFd());
@@ -140,9 +143,9 @@ void Command::fUser(Client& user, Cmd& cmd)
     Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 	if (checkName(cmd.arg(0)))
-		return serv.putMsg(user, ERR_ERRONEUSNICKNAME(user.getNickName(), cmd.arg(0)));
+		return serv.addBuffOut(user, ERR_ERRONEUSUSERNAME(user.getNickName(), cmd.arg(0)));
 	user.setUserName(cmd.arg(0));
 }
 
@@ -164,7 +167,7 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 	Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty() || cmd.arg(1).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
 	std::vector<std::string> lstTarget(split(cmd.arg(0), ','));
 	std::vector<std::string>::iterator itT(lstTarget.begin());
@@ -173,20 +176,20 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 	{
 		(*itT).erase(0,1);
 		if (serv.findChannel((*itT)) == serv.endChannel())
-			return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itT)));
+			return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itT)));
 
 		Channel& channel = (*serv.findChannel((*itT))).second;
 		if (channel.findUser(user.getFd()) <= 0)
-			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
-		serv.putMsg(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.argcs(1)));
+			return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
+		serv.addBuffOut(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.argcs(1)));
 	}
 	else
 	{
 		if (serv.findClient((*itT)) == serv.endClientFd())
-			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
+			return serv.addBuffOut(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
 
 		Client& target = (*serv.findClient((*itT))).second;
-		serv.putMsg(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.argcs(1)));
+		serv.addBuffOut(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.argcs(1)));
 	}
 }
 
@@ -195,7 +198,7 @@ void Command::fInvite(Client& user, Cmd& cmd)
     Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty() || cmd.arg(1).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
 	std::vector<std::string> lstUser(split(cmd.arg(0), ','));
 	std::vector<std::string>::iterator itU(lstUser.begin());
@@ -205,27 +208,27 @@ void Command::fInvite(Client& user, Cmd& cmd)
 	while (itU != lstUser.end())
 	{
 		if (serv.endClientFd() == serv.findClient(*itU))
-			return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
+			return serv.addBuffOut(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
 		Client invited(serv.findClient(*itU)->second);
 
     	std::vector<std::string>::iterator itC = lstChannel.begin();
 		while (itC != lstChannel.end())
 		{
 			if ((*itC)[0] != '#' || checkPrint(*itC))
-				return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), *itC));
+				return serv.addBuffOut(user, ERR_BADCHANMASK(user.getNickName(), *itC));
 			(*itC).erase(0,1);
 			if (serv.findChannel((*itC)) == serv.endChannel())
-				return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itC)));
+				return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itC)));
 
 			Channel& channel = (*serv.findChannel((*itC))).second;
 			if (channel.findUser(user.getFd()) <= 0)
-				return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), channel.getName()));
+				return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), channel.getName()));
 			if (channel.findOperator(user.getFd()) <= 0)
-				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
+				return serv.addBuffOut(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 
 			channel.addInvite(invited.getFd());
 			std::cout << "log invite : " << RPL_INVITERCVR(user.getPrefix(), invited.getNickName(), *itC) << std::endl;
-			serv.putMsg(invited, RPL_INVITERCVR(user.getPrefix(), invited.getNickName(), *itC));
+			serv.addBuffOut(invited, RPL_INVITERCVR(user.getPrefix(), invited.getNickName(), *itC));
 			++itC;
 		}
 		++itU;
@@ -239,26 +242,26 @@ void Command::fMode(Client& user, Cmd& cmd)
     Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 	
 	std::string name(cmd.arg(0));
 	if (name[0] != '#')
-		return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), cmd.arg(0)));
+		return serv.addBuffOut(user, ERR_BADCHANMASK(user.getNickName(), cmd.arg(0)));
 	name.erase(0,1);
 	if (serv.findChannel(name) == serv.endChannel())
-		return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), name));
+		return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), name));
 
 	Channel& channel = (*serv.findChannel(name)).second;
 
 	if (channel.findUser(user.getFd()) <= 0)
-		return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), channel.getName()));
+		return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), channel.getName()));
 
 	if (channel.findOperator(user.getFd()) <= 0)
-		return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
+		return serv.addBuffOut(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 
 	if (cmd.arg(1).empty())
 	{
-		return serv.putMsg(user, RPL_MODE(user.getNickName(), channel.getName(), channel.getMode()));
+		return serv.addBuffOut(user, RPL_PRINT_MODE(user.getNickName(), channel.getName(), channel.getMode()));
 	}
 
 	size_t i(0);
@@ -268,26 +271,26 @@ void Command::fMode(Client& user, Cmd& cmd)
 	if (str[0] == '+')
 		mode = 1;
 	else if (str[0] != '-')
-		return serv.putMsg(user, ERR_UMODEUNKNOWNFLAG(user.getNickName(), str[0]));
+		return serv.addBuffOut(user, ERR_UMODEUNKNOWNFLAG(user.getNickName(), str[0]));
 
 	for (std::string::iterator it = str.begin() + 1; it != str.end(); ++it)
 	{
 		if (!isTokenMode(*it))
-			return serv.putMsg(user, ERR_UMODEUNKNOWNFLAG(user.getNickName(), *it));
+			return serv.addBuffOut(user, ERR_UMODEUNKNOWNFLAG(user.getNickName(), *it));
 		if (*it == 'l')
 		{
 			if (mode)
 			{
 				if (cmd.arg(2 + i).empty())
-					return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+					return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 				channel.setMode(*it, toSize_t(cmd.arg(2 + i)));
-				serv.putMsg(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));
+				serv.addBuffOut(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));
 				++i;
 			}
 			else
 			{
 				channel.setMode(*it, 0);
-				serv.putMsg(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
+				serv.addBuffOut(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
 			}
 			continue;
 		}
@@ -296,41 +299,41 @@ void Command::fMode(Client& user, Cmd& cmd)
 			if (mode)
 			{
 				if (cmd.arg(2 + i).empty())
-					return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+					return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 				channel.setPassword(cmd.arg(2 + i));
-				serv.putMsg(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, ""));
+				serv.addBuffOut(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, ""));
 				++i;
 			}
 			else
 			{
 				channel.setPassword("");
-				serv.putMsg(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
+				serv.addBuffOut(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
 			}
 			continue;
 		}
 		else if (*it == 'o')
 		{
 			if (cmd.arg(2 + i).empty())
-				return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+				return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 			if (serv.findClient(cmd.arg(2 + i)) == serv.endClientFd())
-				return serv.putMsg(user, ERR_USERNOTINCHANNEL(cmd.arg(2 + i),channel.getName()));
+				return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(cmd.arg(2 + i),channel.getName()));
 			Client client = (serv.findClient(cmd.arg(2 + i)))->second;
 			if (channel.findUser(client.getFd()) <= 0)
-				return serv.putMsg(user, ERR_USERNOTINCHANNEL(cmd.arg(2 + i),channel.getName()));
+				return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(cmd.arg(2 + i),channel.getName()));
 			channel.grade(mode, client.getFd());
 			if (mode)
-				serv.putMsg(channel, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));
+				serv.addBuffOut(channel, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));
 			else
-				serv.putMsg(channel, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));    
+				serv.addBuffOut(channel, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, cmd.arg(2 + i)));    
 			channel.checkOperator();
 			++i;
 			continue;
 		}
 		channel.setMode(*it, mode);
 		if (mode)
-			serv.putMsg(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, ""));
+			serv.addBuffOut(user, RPL_MODE_P(user.getPrefix(), channel.getName(), *it, ""));
 		else
-			serv.putMsg(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
+			serv.addBuffOut(user, RPL_MODE_M(user.getPrefix(), channel.getName(), *it, ""));
 	}
 	channel.log();
 }
@@ -340,27 +343,27 @@ void Command::fTopic(Client& user, Cmd& cmd)
     Server& serv = Server::getInstance();
 
 	if (cmd.arg(0).empty())
-		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 	
 	std::string name(cmd.arg(0));
 	if (name[0] != '#')
-		return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), cmd.arg(0)));
+		return serv.addBuffOut(user, ERR_BADCHANMASK(user.getNickName(), cmd.arg(0)));
 	name.erase(0,1);
 	if (serv.findChannel(name) == serv.endChannel())
-		return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), name));
+		return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), name));
 
 	Channel& channel = (*serv.findChannel(name)).second;
 
 	if (cmd.arg(1).empty())
 	{
 		if (channel.getTopic().empty())
-			return serv.putMsg(channel, RPL_NOTOPIC(user.getNickName(), channel.getName()));
-		return serv.putMsg(user, RPL_TOPIC(user.getPrefix(), channel.getName(), channel.getTopic()));
+			return serv.addBuffOut(channel, RPL_NOTOPIC(user.getNickName(), channel.getName()));
+		return serv.addBuffOut(user, RPL_TOPIC(user.getPrefix(), channel.getName(), channel.getTopic()));
 	}
 	if (channel.getMode('t') && channel.findOperator(user.getFd()) < 1)
-		return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
+		return serv.addBuffOut(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 	channel.setTopic(cmd.argcs(1));
-	serv.putMsg(channel, RPL_TOPIC(user.getPrefix(), channel.getName(), cmd.argcs(1)));
+	serv.addBuffOut(channel, RPL_TOPIC(user.getPrefix(), channel.getName(), cmd.argcs(1)));
 	logScript(LOG_TOPIC(toString(user.getFd()), user.getNickName(), channel.getName(), channel.getTopic()));
 }
 
@@ -373,19 +376,19 @@ void Command::fPart(Client& user, Cmd& cmd)
 
    
     if (lstChannel.size() < 1)
-        return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+        return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
     
     while (itC != lstChannel.end())
     {
 		if (itC->empty() || (*itC)[0] != '#' || !(*itC)[1])
-            return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), *itC));
+            return serv.addBuffOut(user, ERR_BADCHANMASK(user.getNickName(), *itC));
         (*itC).erase(0,1);
 		if (serv.findChannel(*itC) == serv.endChannel())
-            return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
+            return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
         Channel& channel = (*serv.findChannel(*itC)).second;
 		if (channel.findUser(user.getFd()) <= 0)
-			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itC));
-		serv.putMsg(channel, RPL_PART(user.getPrefix(), channel.getName()));
+			return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itC));
+		serv.addBuffOut(channel, RPL_PART(user.getPrefix(), channel.getName()));
 		channel.rmUser(user.getFd());
 		logScript(LOG_PART(toString(user.getFd()),user.getNickName(), channel.getName()));
 		channel.log();
@@ -410,26 +413,26 @@ void Command::fKick(Client& user, Cmd& cmd)
 
     
     if (lstChannel.size() < 1 || lstUser.size() < 1 || reason.empty())
-        return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+        return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
     
     while (itC != lstChannel.end())
     {
 		if (itC->empty() || (*itC)[0] != '#' || !(*itC)[1])
-            return serv.putMsg(user, ERR_BADCHANMASK(user.getNickName(), *itC));
+            return serv.addBuffOut(user, ERR_BADCHANMASK(user.getNickName(), *itC));
         (*itC).erase(0,1);
 		if (serv.findChannel(*itC) == serv.endChannel())
-            return serv.putMsg(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
+            return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), *itC));
         Channel& channel = (*serv.findChannel(*itC)).second;
         while (itU != lstUser.end())
         {
 			if (serv.endClientFd() == serv.findClient(*itU))
-            	return serv.putMsg(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
+            	return serv.addBuffOut(user, ERR_NOSUCHNICK(user.getNickName(),*itU));
        		Client& kicked = (*serv.findClient(*itU)).second;
 			if (channel.findOperator(user.getFd()) <= 0)
-				return serv.putMsg(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
+				return serv.addBuffOut(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 			if (channel.findUser(kicked.getFd()) <= 0)
-				return serv.putMsg(user, ERR_USERNOTINCHANNEL(*itU,*itC));
-			serv.putMsg(channel, RPL_KICK(user.getPrefix(), channel.getName(), kicked.getNickName(), reason));
+				return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(*itU,*itC));
+			serv.addBuffOut(channel, RPL_KICK(user.getPrefix(), channel.getName(), kicked.getNickName(), reason));
 			channel.rmUser(kicked.getFd());
 			logScript(LOG_KCIK(toString(user.getFd()),user.getNickName(), kicked.getNickName(), channel.getName()));
             ++itU;
@@ -448,7 +451,7 @@ void rpl_lst(Client& user, Channel& channel)
 
 
 	std::string lst;
-	serv.putMsg(channel, RPL_JOIN(user.getPrefix(), channel.getName()));
+	serv.addBuffOut(channel, RPL_JOIN(user.getPrefix(), channel.getName()));
 	for (std::set<int>::iterator it = channel.getOperator().begin(); it != channel.getOperator().end(); ++it)
 	{
 		lst +=  "@" + serv.findClient(*it)->second.getNickName() + " ";
@@ -457,8 +460,8 @@ void rpl_lst(Client& user, Channel& channel)
 	{
 		lst +=  serv.findClient(*it)->second.getNickName() + " ";
 	}
-	serv.putMsg(user, RPL_NAMEREPLY(user.getNickName(), channel.getName(), lst));
-	serv.putMsg(user, RPL_ENDLISTCLIENT(user.getNickName(), channel.getName()));
+	serv.addBuffOut(user, RPL_NAMEREPLY(user.getNickName(), channel.getName(), lst));
+	serv.addBuffOut(user, RPL_ENDLISTCLIENT(user.getNickName(), channel.getName()));
 }
 
 void Command::fJoin(Client& user, Cmd& cmd)
@@ -467,7 +470,7 @@ void Command::fJoin(Client& user, Cmd& cmd)
     std::vector<std::string> joinChannel(split(cmd.arg(0), ','));
     
     if (joinChannel.size() < 1)
-        return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
+        return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
     std::vector<std::string> lstPassord(split(cmd.arg(1), ','));
     std::vector<std::string>::iterator itP(lstPassord.begin()); 
@@ -482,9 +485,9 @@ void Command::fJoin(Client& user, Cmd& cmd)
 				if (channel.findUser(user.getFd()) != -1)
 					return ;
                 if (channel.getMode('i') && channel.findInvite(user.getFd()) == -1)
-                    return serv.putMsg(user, ERR_INVITEONLYCHAN(user.getNickName(), *itC));
+                    return serv.addBuffOut(user, ERR_INVITEONLYCHAN(user.getNickName(), *itC));
                 else if (channel.getMode('l'))
-                    return serv.putMsg(user, ERR_CHANNELISFULL(user.getNickName(), *itC));        
+                    return serv.addBuffOut(user, ERR_CHANNELISFULL(user.getNickName(), *itC));        
                 else if (channel.emptyPassword())
 				{
 					channel.addMember(user.getFd());
@@ -496,7 +499,7 @@ void Command::fJoin(Client& user, Cmd& cmd)
 					rpl_lst(user, channel);
 				}
                 else
-                    return serv.putMsg(user, ERR_BADCHANNELKEY(user.getNickName(), *itC));
+                    return serv.addBuffOut(user, ERR_BADCHANNELKEY(user.getNickName(), *itC));
                 logScript(LOG_JOIN_MEMBER(toString(user.getFd()), user.getNickName(), *itC));
 				(*serv.findChannel(*itC)).second.log();
             }
@@ -513,7 +516,7 @@ void Command::fJoin(Client& user, Cmd& cmd)
             }
         }
         else
-            return serv.putMsg(user, ERR_BADCHANMASK_O(user.getNickName(), *itC));
+            return serv.addBuffOut(user, ERR_BADCHANMASK_O(user.getNickName(), *itC));
     }
 }
 

@@ -80,7 +80,7 @@
 # define ENDWHO(name, channel) std::string(SERVER_PREFIX + " 315 " + name + " #" + channel + " :End of /WHO list.")
 # define RPL_JOIN(prefix, channel)(std::string(prefix)  + " JOIN #" + channel)
 # define RPL_PART(prefix, channel)(std::string(prefix)  + " PART #" + channel)
-# define RPL_MODE(user, channel, mode)(SERVER_PREFIX + " 324 " + user + " " + channel + mode)
+# define RPL_PRINT_MODE(user, channel, mode)(SERVER_PREFIX + " 379 " + user + " #" + channel + mode)
 # define RPL_MODE_P(prefix, channel, mode, name)(std::string(prefix)  + " MODE #" + channel + " +" + mode + " " + name)
 # define RPL_MODE_M(prefix, channel, mode, name)(std::string(prefix)  + " MODE #" + channel + " -" + mode + " " + name)
 # define RPL_KICK(prefix, channel, target, comment)(std::string(prefix)  + " KICK #" + channel + " " + target + " :" + comment)

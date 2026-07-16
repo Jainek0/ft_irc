@@ -10,9 +10,11 @@ class Server
 		~Server();
 		void								setup					();
 
-		void								putMsg					(const Client& target, const std::string& msg);
-		void								putMsg					(const Channel& target, const std::string& msg);
-		void								putMsg					(const Channel& target, const Client& user,const std::string& msg);
+		int									loop					();
+
+		void								addBuffOut				(const Client& target, const std::string& msg);
+		void								addBuffOut				(const Channel& target, const std::string& msg);
+		void								addBuffOut				(const Channel& target, const Client& user,const std::string& msg);
 
 		bool 								checkPass				(const std::string pass) 						const;
 		bool 								checkClient				(const std::string nick) 						const;
@@ -70,7 +72,8 @@ class Server
 		mapClient_t					_clientsFd;
 		mapNick_t					_nicks;
 		mapChannel_t				_channels;
-		std::map<int, std::string>	_msg;
+		std::map<int, std::string>	_buffOut;
+		std::map<int, std::string>	_buffIn;
 
 	/*  ------------------< ban >------------------*/
 

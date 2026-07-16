@@ -30,10 +30,10 @@ OBJ := $(addprefix $(OBJDIR)/, $(OBJ))
 OBJ_BONUS = $(SRC_BONUS:.cpp=.o)
 OBJ_BONUS := $(addprefix $(OBJDIR_BONUS)/, $(OBJ_BONUS))
 
+all : $(OBJ) $(NAME) bonus
+
 $(NAME) : $(OBJ)
 	@$(CC) $(CFLAGS) $(OBJ) -o $(NAME)
-
-all : $(OBJ) $(NAME) bonus
 
 bonus : $(NAME_BONUS)
 

@@ -32,7 +32,7 @@ bool Channel::checkOperator()
         _members.erase(*_members.begin());
         Server& serv = Server::getInstance();
         Client target = serv.findClient(*_operators.begin())->second;
-        serv.putMsg(*this, RPL_MODE_P(SERVER_PREFIX, _name, "o", target.getNickName()));
+        serv.addBuffOut(*this, RPL_MODE_P(SERVER_PREFIX, _name, "o", target.getNickName()));
     }
     return 0;
 }

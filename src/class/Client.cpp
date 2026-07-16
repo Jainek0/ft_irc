@@ -27,10 +27,10 @@ void Client::clearChannel()
 		{
 			Channel &channel = serv.findChannel(*it)->second;
 			channel.rmUser(_fd);
-			serv.putMsg(channel, RPL_QUIT(getPrefix()));
+			serv.addBuffOut(channel, RPL_QUIT(getPrefix()));
+			serv.findChannel(*it)->second.rmInvite(_fd);
 			if (channel.checkOperator())
 				serv.rmChannel(channel.getName());
-			serv.findChannel(*it)->second.rmInvite(_fd);
 		}
 	}
 }
