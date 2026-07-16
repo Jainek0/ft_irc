@@ -19,7 +19,6 @@ int	init(Server &myserver)//, struct sigaction &signal)
 
 int	main(int argc, char **argv)
 {
-	//is it necessary to while(isdigit) input?
 	if (argc != 3 || !(atoi(argv[1]) > 1023 && atoi(argv[1]) < 65535))
 	{
 		std::cout << "please format input as :" << std::endl;
@@ -29,8 +28,6 @@ int	main(int argc, char **argv)
 	
 	int port = atoi(argv[1]);
 	Server &myserver = Server::getInstance(port, argv[2]);
-	// struct sigaction	signal;
-	// memset(&signal, 0, sizeof(signal));
 	if (init(myserver))
 		return (1);
 
@@ -47,7 +44,7 @@ int	main(int argc, char **argv)
 			continue ;
 		for(int i = 0; i < 1024; i++)
 		{
-			if ((myserver.getPollfds(i)).revents == POLLIN)//&POLLIN?
+			if ((myserver.getPollfds(i)).revents & POLLIN)
 			{
 				if ((myserver.getPollfds(i)).fd == myserver.getServFd())
 					myserver.acceptClient();

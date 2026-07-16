@@ -161,7 +161,6 @@ void	Server::putMsg(const Channel& target, const Client& user, const std::string
 	}
 }
 
-//getters/setters
 const int	&Server::getPort(void)const
 {
 	return (_port);
@@ -249,6 +248,7 @@ void	Server::rmClient(Client	&client)
 	std::string	clientNick = client.getNickName();
 	try
 	{
+		client.clearChannel();
 		_nicks.erase(clientNick);
 		if (clientNick.empty())
 			clientNick = "< no nick name >";

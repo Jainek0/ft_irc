@@ -111,7 +111,7 @@ void Command::fNick(Client& user, Cmd& cmd)
 {
     Server& serv = Server::getInstance();
 
-	std::cout << cmd.arg(0) << std::endl; // test
+	std::cout << cmd.arg(0) << std::endl;
 	if (cmd.arg(0).empty())
 		return serv.putMsg(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
@@ -178,7 +178,7 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 		Channel& channel = (*serv.findChannel((*itT))).second;
 		if (channel.findUser(user.getFd()) <= 0)
 			return serv.putMsg(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
-		serv.putMsg(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.arg(1)));
+		serv.putMsg(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.argcs(1)));
 	}
 	else
 	{
