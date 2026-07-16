@@ -1,4 +1,4 @@
-#include "src/_header/irc.hpp"
+#include "_header/irc.hpp"
 
 int g_sig = 0;
 
