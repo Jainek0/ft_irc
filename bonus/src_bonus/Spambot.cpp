@@ -46,7 +46,7 @@ void	Spambot::addCheck(Cmd cmd)
 	if(cmd.command() == "JOIN")
 	{
 		std::cout << "privmsg in to " << cmd.arg(0) << std::endl;
-		putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :Hello World");
+		addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :Hello World");
 		_channels.insert(cmd.arg(0));
 	}
 }
@@ -55,7 +55,7 @@ void Spambot::loopChannel(std::string msg)
 {
 	for (std::set<std::string>::iterator it = _channels.begin(); it != _channels.end(); ++it)
 	{
-		putMsg(_prefix + " PRIVMSG " + *it + " " + msg);
+		addBuffOut(_prefix + " PRIVMSG " + *it + " " + msg);
 	}
 }
 
@@ -95,31 +95,31 @@ void	Spambot::overReact(Cmd cmd)
 	{
 		std::cout << "overReact" << std::endl;
 		if (cmd.argcs(1).find("test") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :want to test me ?");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :want to test me ?");
 		else if (cmd.argcs(1).find("yes") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :no");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :no");
 		else if (cmd.argcs(1).find("no") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :yes");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :yes");
 		else if (cmd.argcs(1).find("67") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :six seven !!!");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :six seven !!!");
 		else if (cmd.argcs(1).find("bot") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :and we are legion");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :and we are legion");
 		else if (cmd.argcs(1).find("left") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :right");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :right");
 		else if (cmd.argcs(1).find("right") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :left");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :left");
 		else if (cmd.argcs(1).find("up") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :down");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :down");
 		else if (cmd.argcs(1).find("down") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :up");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :up");
 		else if (cmd.argcs(1).find("hello") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :goodbye");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :goodbye");
 		else if (cmd.argcs(1).find("lol") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :you suck");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :you suck");
 		else if (cmd.argcs(1).find("one piece") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :luffy is cringe");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :luffy is cringe");
 		else if (cmd.argcs(1).find("kroussar") != std::string::npos)
-			return putMsg(_prefix + " PRIVMSG " + cmd.arg(0) + " :le goat");
+			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :le goat");
 		else 
 			std::cout << "no overReact" << std::endl;
 
@@ -132,7 +132,7 @@ void	Spambot::inviteCheck(Cmd cmd)
 	if(cmd.command() == "INVITE")
 	{
 		if(cmd.arg(0) == _nick)
-			putMsg("JOIN " + cmd.arg(1));
+			addBuffOut("JOIN " + cmd.arg(1));
 		_channels.insert(cmd.arg(1));
 	}
 }
@@ -164,10 +164,35 @@ void Spambot::loop()
 
     while (_signal)
     {
+		int	retpoll = poll(&_pollFd, 0, 1000);
+		if (retpoll == -1)
+		{
+			std::cerr << "poll error" << std::endl;
+			return ;
+		}
         timecheck = std::time(NULL);
         datetime = std::localtime(&timecheck);
 
-        receiveData();
+
+		if ((_pollFd).revents & POLLIN)
+		{
+			std::cout << " POLLIN" << std::endl;
+			receiveData();
+		}
+		if ((_pollFd).revents & POLLOUT)
+		{
+			std::cout << " POLLOUT" << std::endl;
+			if (!_buffOut.empty())
+			{
+				ssize_t bytes = send(_port, _buffOut.c_str(), _buffOut.size(), 0);
+				if (bytes < 0)
+					endBot();
+				else
+					_buffOut.erase(0, bytes);
+				if (_buffOut.empty())
+					_pollFd.events = POLLIN;
+			}
+		}
 
         if (datetime && datetime->tm_min != timethen)
         {
@@ -178,12 +203,10 @@ void Spambot::loop()
     }
 }
 
-void Spambot::putMsg(const std::string &msg)
+void Spambot::addBuffOut(const std::string &msg)
 {
-    std::string output = msg + "\r\n";
-
-    if (send(_socket, output.c_str(), output.size(), 0) == -1)
-        endBot();
+	_buffOut += msg + "\r\n";
+	_pollFd.events = POLLIN | POLLOUT;
 }
 
 void	Spambot::endBot()
@@ -195,13 +218,6 @@ Spambot::Spambot(int port, std::string nick, std::string pass)
     : _port(port), _socket(-1), _nick(nick),
       _prefix(":" + nick + "!bot@127.0.0.1")
 {
-	struct sigaction sa;
-
-	sa.sa_handler = Spambot::sa_sig;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-
-	sigaction(SIGINT, &sa, NULL);
 
     if (!initSocket())
     {
@@ -209,44 +225,63 @@ Spambot::Spambot(int port, std::string nick, std::string pass)
         return;
     }
 
-    putMsg("PASS " + pass);
-    putMsg("NICK " + nick);
-    putMsg("USER bot");
+    addBuffOut("PASS " + pass);
+    addBuffOut("NICK " + nick);
+    addBuffOut("USER bot");
 }
 
 bool Spambot::initSocket()
 {
-    sockaddr_in server;
+	_socket  = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (_socket == -1)
+	{
+		std::cerr << "socket()";
+		return true;
+	}
 
-    _socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (_socket == -1)
-		return false;
-    std::memset(&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(_port);
-    if (inet_pton(AF_INET, "127.0.0.1", &server.sin_addr) <= 0)
-    {
-        close(_socket);
-        return false;
-    }
-    if (connect(_socket, (sockaddr *)&server, sizeof(server)) == -1)
-    {
-        close(_socket);
-        return false;
-    }
-	timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-	setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    std::cout << "Connect : " << _port << std::endl;
-    return true;
+	if (fcntl(_socket, F_SETFL, O_NONBLOCK))
+	{
+		std::cerr << "fcntl()";
+		return true;
+	}
+
+	int opt = 1;
+	setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
+
+	struct sockaddr_in 	_servaddr;
+	_servaddr.sin_family = AF_INET;
+	_servaddr.sin_port = htons(_port);
+
+	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
+
+	if (bind(_socket, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
+	{
+		std::cerr << "bind()";
+		close(_socket);
+		return true;
+	}
+	if (listen(_socket, 10))
+	{
+		close(_socket);
+		std::cerr << "listen()";
+		return true;
+	}
+	memset(&_pollFd, 0, sizeof(_pollFd));
+	_pollFd.fd = _socket;
+	_pollFd.events = POLLIN;
+	_pollFd.revents = 0;
+
+	signal(SIGINT, sa_sig);
+	signal(SIGQUIT, sa_sig);
+	return false;
 }
+
 
 Spambot::~Spambot()
 {
     if (_socket != -1)
 	{
-		// putMsg("QUIT");
         if (close(_socket))
 			std::cout << "close socket" << std::endl;
 	}

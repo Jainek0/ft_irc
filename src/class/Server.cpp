@@ -136,10 +136,7 @@ const mapNick_t 			&Server::getMapClientsNick(void) const {return (_nicks);}
 
 void	Server::addBuffOut(const Client& target, const std::string& msg)
 {
-	std::string output(msg + "\r\n");
-	std::cout << output << std::endl;
-
-	_buffOut.at(target.getFd()) += output;
+	_buffOut.at(target.getFd()) += msg + "\r\n";
 	_pollFds[target.getFd()].events = POLLIN | POLLOUT;
 	// if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
 	// 		rmClient(_clientsFd.at(target.getFd()));
@@ -147,13 +144,11 @@ void	Server::addBuffOut(const Client& target, const std::string& msg)
 
 void	Server::addBuffOut(const Channel& target, const std::string& msg)
 {
-	std::string output(msg + "\r\n");
-	std::cout << output << std::endl;
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
 	{
 		_pollFds[*it].events = POLLIN | POLLOUT;
-		_buffOut.at(*it) += output;
+		_buffOut.at(*it) += msg + "\r\n";
 	}
 		// if (send(*it, output.c_str(), output.size(), 0) < 0)
 			// rmClient(_clientsFd.at(*it));
@@ -161,15 +156,13 @@ void	Server::addBuffOut(const Channel& target, const std::string& msg)
 
 void	Server::addBuffOut(const Channel& target, const Client& user, const std::string& msg)
 {
-	std::string output(msg + "\r\n");
-	std::cout << output << std::endl;
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
 	{
 		if (*it != user.getFd())
 		{
 			_pollFds[*it].events = POLLIN | POLLOUT;
-			_buffOut.at(*it) += output;
+			_buffOut.at(*it) += msg + "\r\n";
 		}
 			// if (send(*it, output.c_str(), output.size(), 0) < 0)
 			// 	rmClient(_clientsFd.at(*it));

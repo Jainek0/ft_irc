@@ -2,7 +2,7 @@
 
 int g_sig = 0;
 
-int	init(Server &myserver)//, struct sigaction &signal)
+int	init(Server &myserver)
 {
 	try
 	{

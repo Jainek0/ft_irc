@@ -13,6 +13,9 @@
 # include <sstream>
 # include <cstring>
 
+# include <poll.h>//poll
+# include <fcntl.h>//fcntl
+
 #include <arpa/inet.h>
 
 # include "Cmd.hpp"
@@ -48,7 +51,7 @@ class Spambot
 
 		void overReact(Cmd cmd);
 
-		void putMsg(const std::string&);
+		void addBuffOut(const std::string&);
 
 		static void sa_sig(int sig);
 
@@ -65,6 +68,8 @@ class Spambot
 		std::string						_msg;
 		std::string						_nick;
 		std::string						_prefix;
+		struct pollfd					_pollFd;
+		std::string						_buffOut;
 
 		Spambot(Spambot &other);
 		Spambot& operator=(Spambot &other);
