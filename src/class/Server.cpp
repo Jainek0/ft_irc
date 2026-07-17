@@ -137,7 +137,15 @@ const mapNick_t 			&Server::getMapClientsNick(void) const {return (_nicks);}
 void	Server::addBuffOut(const Client& target, const std::string& msg)
 {
 	_buffOut.at(target.getFd()) += msg + "\r\n";
-	_pollFds[target.getFd()].events = POLLIN | POLLOUT;
+	for (int i = 0; i < 1024; i++)
+	{
+		if (_pollFds[i].fd == target.getFd())
+		{
+			_pollFds[i].events = POLLIN | POLLOUT;
+			break ;
+		}
+	}
+	// _pollFds[target.getFd()].events = POLLIN | POLLOUT;
 	// if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
 	// 		rmClient(_clientsFd.at(target.getFd()));
 }
@@ -147,7 +155,14 @@ void	Server::addBuffOut(const Channel& target, const std::string& msg)
 	std::set<int> lst(target.getUser());
 	for (std::set<int>::iterator it = lst.begin(); it != lst.end(); ++it)
 	{
-		_pollFds[*it].events = POLLIN | POLLOUT;
+		for (int i = 0; i < 1024; i++)
+		{
+			if (_pollFds[i].fd == *it)
+			{
+				_pollFds[i].events = POLLIN | POLLOUT;
+				break ;
+			}
+		}
 		_buffOut.at(*it) += msg + "\r\n";
 	}
 		// if (send(*it, output.c_str(), output.size(), 0) < 0)
@@ -161,7 +176,14 @@ void	Server::addBuffOut(const Channel& target, const Client& user, const std::st
 	{
 		if (*it != user.getFd())
 		{
-			_pollFds[*it].events = POLLIN | POLLOUT;
+			for (int i = 0; i < 1024; i++)
+			{
+				if (_pollFds[i].fd == *it)
+				{
+					_pollFds[i].events = POLLIN | POLLOUT;
+					break ;
+				}
+			}
 			_buffOut.at(*it) += msg + "\r\n";
 		}
 			// if (send(*it, output.c_str(), output.size(), 0) < 0)
@@ -257,7 +279,7 @@ void	Server::rmClient(Client	&client)
 	int			clientFd = client.getFd();
 	std::string	clientNick = client.getNickName();
 	_buffOut.erase(clientFd);
-	// _buffIn.erase(clientFd);
+	_buffIn.erase(clientFd);
 	try
 	{
 		client.clearChannel();
@@ -277,6 +299,7 @@ void	Server::rmClient(Client	&client)
 		if(_pollFds[i].fd == clientFd)
 		{
 			_pollFds[i].fd = 0;
+			_pollFds[i].events = 0;
 			close(clientFd);
 			clientFd = -1;
 			return;
@@ -290,20 +313,25 @@ void	Server::recieveData(int fd)
 	char		buff[SIZEBUFF];
 
 	memset(buff, 0, SIZEBUFF);
+	if (_buffIn.find(fd) == _buffIn.end())
+		return ;
 	std::string &msg = _buffIn.at(fd);
 	int bytes = recv(fd, buff, SIZEBUFF, 0);
+	std::cout << "-------" << buff << "--------" << std::endl;
 	if (bytes == 0)
 	{
 		std::cout << "rmClient in recv" << std::endl;
 		return rmClient(_clientsFd.at(fd));
 	}
-	if (bytes < 0)
+	if (bytes <= 0)
 		return ;
 	msg.append(buff, bytes);
 	size_t pos;
 	while ((pos = msg.find("\r\n")) != std::string::npos)
 	{
 		Command::handleCommand(_clientsFd.at(fd), msg.substr(0, pos));
+		if (_buffIn.find(fd) == _buffIn.end())
+			return ;
 		msg.erase(0, pos + 2);
 	}
 }
@@ -332,14 +360,14 @@ int Server::loop()
 			}
 			if ((getPollfds(i)).revents & POLLOUT)
 			{
-				std::cout << i << " POLLOUT" << std::endl;
-				std::map<int, std::string>::iterator it = _buffOut.find(i);
-				std::cout << it->second << std::endl;
+				std::cout << getPollfds(i).fd << " POLLOUT" << std::endl;
+				std::map<int, std::string>::iterator it = _buffOut.find(getPollfds(i).fd);
+				// std::cout << it->second << std::endl;
 				if (it != _buffOut.end() && !it->second.empty())
 				{
-					ssize_t bytes = send(i, it->second.c_str(), it->second.size(), 0);
+					ssize_t bytes = send(getPollfds(i).fd, it->second.c_str(), it->second.size(), 0);
 					if (bytes < 0)
-						rmClient(_clientsFd.at(i));
+						rmClient(_clientsFd.at(getPollfds(i).fd));
 					else
 						it->second.erase(0, bytes);
 					if (it->second.empty())

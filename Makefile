@@ -56,6 +56,6 @@ fclean : clean
 	@rm -f $(NAME_BONUS)
 	@rm -f irc.log
 
-re : fclean all
+re : fclean $(NAME)
 
 .PHONY : all clean fclean re bonus
