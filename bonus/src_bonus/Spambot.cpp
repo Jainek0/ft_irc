@@ -46,7 +46,7 @@ void	Spambot::addCheck(Cmd cmd)
 	if(cmd.command() == "JOIN")
 	{
 		std::cout << "privmsg in to " << cmd.arg(0) << std::endl;
-		addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :Hello World");
+		addBuffOut("PRIVMSG " + cmd.arg(0) + " :Hello World");
 		_channels.insert(cmd.arg(0));
 	}
 }
@@ -55,7 +55,7 @@ void Spambot::loopChannel(std::string msg)
 {
 	for (std::set<std::string>::iterator it = _channels.begin(); it != _channels.end(); ++it)
 	{
-		addBuffOut(_prefix + " PRIVMSG " + *it + " " + msg);
+		addBuffOut("PRIVMSG " + *it + " " + msg);
 	}
 }
 
@@ -95,31 +95,31 @@ void	Spambot::overReact(Cmd cmd)
 	{
 		std::cout << "overReact" << std::endl;
 		if (cmd.argcs(1).find("test") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :want to test me ?");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :want to test me ?");
 		else if (cmd.argcs(1).find("yes") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :no");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :no");
 		else if (cmd.argcs(1).find("no") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :yes");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :yes");
 		else if (cmd.argcs(1).find("67") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :six seven !!!");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :six seven !!!");
 		else if (cmd.argcs(1).find("bot") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :and we are legion");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :and we are legion");
 		else if (cmd.argcs(1).find("left") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :right");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :right");
 		else if (cmd.argcs(1).find("right") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :left");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :left");
 		else if (cmd.argcs(1).find("up") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :down");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :down");
 		else if (cmd.argcs(1).find("down") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :up");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :up");
 		else if (cmd.argcs(1).find("hello") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :goodbye");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :goodbye");
 		else if (cmd.argcs(1).find("lol") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :you suck");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :you suck");
 		else if (cmd.argcs(1).find("one piece") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :luffy is cringe");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :luffy is cringe");
 		else if (cmd.argcs(1).find("kroussar") != std::string::npos)
-			return addBuffOut(_prefix + " PRIVMSG " + cmd.arg(0) + " :le goat");
+			return addBuffOut("PRIVMSG " + cmd.arg(0) + " :le goat");
 		else 
 			std::cout << "no overReact" << std::endl;
 
@@ -164,7 +164,7 @@ void Spambot::loop()
 
     while (_signal)
     {
-		int	retpoll = poll(&_pollFd, 0, 1000);
+		int	retpoll = poll(&_pollFd, 1, 1000);
 		if (retpoll == -1)
 		{
 			std::cerr << "poll error" << std::endl;
@@ -172,7 +172,6 @@ void Spambot::loop()
 		}
         timecheck = std::time(NULL);
         datetime = std::localtime(&timecheck);
-
 
 		if ((_pollFd).revents & POLLIN)
 		{
@@ -184,7 +183,7 @@ void Spambot::loop()
 			std::cout << " POLLOUT" << std::endl;
 			if (!_buffOut.empty())
 			{
-				ssize_t bytes = send(_port, _buffOut.c_str(), _buffOut.size(), 0);
+				ssize_t bytes = send(_socket, _buffOut.c_str(), _buffOut.size(), 0);
 				if (bytes < 0)
 					endBot();
 				else
@@ -219,7 +218,7 @@ Spambot::Spambot(int port, std::string nick, std::string pass)
       _prefix(":" + nick + "!bot@127.0.0.1")
 {
 
-    if (!initSocket())
+    if (initSocket())
     {
         endBot();
         return;
@@ -249,24 +248,13 @@ bool Spambot::initSocket()
 	setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 	setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt));
 
-	struct sockaddr_in 	_servaddr;
-	_servaddr.sin_family = AF_INET;
-	_servaddr.sin_port = htons(_port);
+	struct sockaddr_in 	servaddr;
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_port = htons(_port);
 
-	inet_pton(AF_INET, "127.0.0.1", &(_servaddr.sin_addr));
+	inet_pton(AF_INET, "127.0.0.1", &(servaddr.sin_addr));
 
-	if (bind(_socket, (struct sockaddr *)&_servaddr, sizeof(_servaddr)))
-	{
-		std::cerr << "bind()";
-		close(_socket);
-		return true;
-	}
-	if (listen(_socket, 10))
-	{
-		close(_socket);
-		std::cerr << "listen()";
-		return true;
-	}
+	connect(_socket, (sockaddr *)&servaddr, sizeof(servaddr));
 	memset(&_pollFd, 0, sizeof(_pollFd));
 	_pollFd.fd = _socket;
 	_pollFd.events = POLLIN;
