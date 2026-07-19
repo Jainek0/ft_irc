@@ -56,7 +56,6 @@ void	Server::setup(void)
 	memset(&_pollFds, 0, sizeof(_pollFds));
 	_pollFds[0].fd = _servFd;
 	_pollFds[0].events = POLLIN;
-	_pollFds[0].revents = 0;
 
 	signal(SIGINT, Server::sigHandler);
 	signal(SIGQUIT, Server::sigHandler);
@@ -145,9 +144,6 @@ void	Server::addBuffOut(const Client& target, const std::string& msg)
 			break ;
 		}
 	}
-	// _pollFds[target.getFd()].events = POLLIN | POLLOUT;
-	// if (send(target.getFd(), output.c_str(), output.size(), 0) < 0)
-	// 		rmClient(_clientsFd.at(target.getFd()));
 }
 
 void	Server::addBuffOut(const Channel& target, const std::string& msg)
@@ -165,8 +161,6 @@ void	Server::addBuffOut(const Channel& target, const std::string& msg)
 		}
 		_buffOut.at(*it) += msg + "\r\n";
 	}
-		// if (send(*it, output.c_str(), output.size(), 0) < 0)
-			// rmClient(_clientsFd.at(*it));
 }
 
 void	Server::addBuffOut(const Channel& target, const Client& user, const std::string& msg)
@@ -186,8 +180,6 @@ void	Server::addBuffOut(const Channel& target, const Client& user, const std::st
 			}
 			_buffOut.at(*it) += msg + "\r\n";
 		}
-			// if (send(*it, output.c_str(), output.size(), 0) < 0)
-			// 	rmClient(_clientsFd.at(*it));
 	}
 }
 
@@ -251,7 +243,6 @@ int	Server::acceptClient(void)
 		{
 			_pollFds[i].fd = clientfd;
 			_pollFds[i].events = POLLIN;
-			_pollFds[i].revents = 0;
 			break;
 		}
 	}
@@ -317,7 +308,6 @@ void	Server::recieveData(int fd)
 		return ;
 	std::string &msg = _buffIn.at(fd);
 	int bytes = recv(fd, buff, SIZEBUFF, 0);
-	std::cout << "-------" << buff << "--------" << std::endl;
 	if (bytes == 0)
 	{
 		std::cout << "rmClient in recv" << std::endl;
@@ -352,7 +342,7 @@ int Server::loop()
 		{
 			if ((getPollfds(i)).revents & POLLIN)
 			{
-				std::cout << i << " POLLIN" << std::endl;
+				std::cout << getPollfds(i).fd  << " POLLIN" << std::endl;
 				if ((getPollfds(i)).fd == getServFd())
 					acceptClient();
 				else
@@ -362,7 +352,6 @@ int Server::loop()
 			{
 				std::cout << getPollfds(i).fd << " POLLOUT" << std::endl;
 				std::map<int, std::string>::iterator it = _buffOut.find(getPollfds(i).fd);
-				// std::cout << it->second << std::endl;
 				if (it != _buffOut.end() && !it->second.empty())
 				{
 					ssize_t bytes = send(getPollfds(i).fd, it->second.c_str(), it->second.size(), 0);

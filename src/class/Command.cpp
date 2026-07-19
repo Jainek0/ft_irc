@@ -87,6 +87,8 @@ bool checkPrint(std::string name)
 			return true;
 		if (std::iscntrl(*it))
 			return true;
+		if (std::isspace(*it))
+			return true;
 		if (*it == ':')
 			return true;
 	}
@@ -170,26 +172,29 @@ void Command::fPrivmsg(Client& user, Cmd& cmd)
 		return serv.addBuffOut(user, ERR_NEEDMOREPARAMS(user.getNickName(), cmd.command()));
 
 	std::vector<std::string> lstTarget(split(cmd.arg(0), ','));
-	std::vector<std::string>::iterator itT(lstTarget.begin());
+	
 
-	if ((*itT)[0] == '#')
+	for (std::vector<std::string>::iterator itT(lstTarget.begin()); itT != lstTarget.end(); ++itT)
 	{
-		(*itT).erase(0,1);
-		if (serv.findChannel((*itT)) == serv.endChannel())
-			return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itT)));
+		if ((*itT)[0] == '#')
+		{
+			(*itT).erase(0,1);
+			if (serv.findChannel((*itT)) == serv.endChannel())
+				return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), (*itT)));
 
-		Channel& channel = (*serv.findChannel((*itT))).second;
-		if (channel.findUser(user.getFd()) <= 0)
-			return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
-		serv.addBuffOut(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.argcs(1)));
-	}
-	else
-	{
-		if (serv.findClient((*itT)) == serv.endClientFd())
-			return serv.addBuffOut(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
+			Channel& channel = (*serv.findChannel((*itT))).second;
+			if (channel.findUser(user.getFd()) <= 0)
+				return serv.addBuffOut(user, ERR_USERNOTINCHANNEL(user.getNickName(),*itT));
+			serv.addBuffOut(channel, user, RPL_PRIVMSGCHANNEL(user.getPrefix(), channel.getName(), cmd.argcs(1)));
+		}
+		else
+		{
+			if (serv.findClient((*itT)) == serv.endClientFd())
+				return serv.addBuffOut(user, ERR_NOSUCHNICK(user.getNickName(),*itT));
 
-		Client& target = (*serv.findClient((*itT))).second;
-		serv.addBuffOut(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.argcs(1)));
+			Client& target = (*serv.findClient((*itT))).second;
+			serv.addBuffOut(target, RPL_PRIVMSGUSER(user.getPrefix(), target.getNickName(), cmd.argcs(1)));
+		}
 	}
 }
 
