@@ -228,7 +228,7 @@ void Command::fInvite(Client& user, Cmd& cmd)
 			Channel& channel = (*serv.findChannel((*itC))).second;
 			if (channel.findUser(user.getFd()) <= 0)
 				return serv.addBuffOut(user, ERR_NOSUCHCHANNEL(user.getNickName(), channel.getName()));
-			if (channel.findOperator(user.getFd()) <= 0)
+			if (channel.getMode('i') && channel.findOperator(user.getFd()) <= 0)
 				return serv.addBuffOut(user, ERR_CHANOPRIVSNEEDED(user.getNickName(), channel.getName()));
 
 			channel.addInvite(invited.getFd());
