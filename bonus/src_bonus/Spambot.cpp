@@ -91,6 +91,16 @@ void	Spambot::overReact(Cmd cmd)
 	if(_channels.size() == 0)
 		return ;
 	
+	if (cmd.command() == "MODE")
+	{
+		if (cmd.arg(1).find("+o") != std::string::npos && cmd.arg(2).find(_nick) != std::string::npos)
+		{
+			addBuffOut("PRIVMSG " + cmd.arg(0) + " :i'm a coward");
+			_channels.erase(cmd.arg(0));
+			return addBuffOut("PART " + cmd.arg(0));
+		}
+	}
+
 	if (cmd.command() == "PRIVMSG")
 	{
 		std::cout << "overReact" << std::endl;
