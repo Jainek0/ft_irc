@@ -138,9 +138,9 @@ void	Spambot::overReact(Cmd cmd)
 
 void	Spambot::inviteCheck(Cmd cmd)
 {
-	std::cout << "INVITE " << cmd.arg(1) << std::endl;
 	if(cmd.command() == "INVITE")
 	{
+		std::cout << "INVITE " << cmd.arg(1) << std::endl;
 		if(cmd.arg(0) == _nick)
 			addBuffOut("JOIN " + cmd.arg(1));
 		_channels.insert(cmd.arg(1));
